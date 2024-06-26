@@ -1,0 +1,16 @@
+<launch>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find planner)/map/map.yaml" output="screen"/>
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher_map_to_odom" args="0 0 0 0 0 0 map odom" />
+
+    <arg name="rviz_view" default="$(find planner)/rviz/plan.rviz"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" required="True" args="-d $(arg rviz_view)"/>
+
+    <node name="plan" pkg="planner" type="plan" output="screen">
+        <rosparam command="load" file="$(find planner)/config/optim_config.yaml"/>
+        <rosparam command="load" file="$(find planner)/config/local_config.yaml"/>
+        <rosparam command="load" file="$(find planner)/config/map_config.yaml"/>
+    </node>
+
+</launch>

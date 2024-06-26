@@ -1,0 +1,9 @@
+local_method: online
+
+offline: {
+  radius: 0.2
+}
+
+online: {
+  radius: 0.6
+}

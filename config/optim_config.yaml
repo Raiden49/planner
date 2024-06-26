@@ -1,0 +1,17 @@
+optim_method: QP # QP, Bezier, BSpline
+
+Bezier: {
+  num_samples: 20
+}
+
+BSpline: {
+  num_samples: 500
+}
+
+QP: {
+  lower_bound: -0.1,
+  upper_bound: 0.1,
+  weight_smooth: 4,
+  weight_length: 1,
+  weight_ref: 0.5,
+}
