@@ -83,7 +83,7 @@ std::vector<std::array<double, 2>> LocalPlannerInterface::GetBestPath(
             }
         }
         // total score
-        path_score = ref_score + obs_score;
+        path_score = 3 * ref_score + obs_score;
         if (path_score > best_score) {
             best_score = path_score;
             best_path_ptr = std::make_shared<

@@ -177,16 +177,18 @@ std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::PathGenerat
                 atan2(path[1][1] - path[0][1], path[1][0] - path[0][0]);
         double heading_angle1 = heading_radians1 * 180 / M_PI;
         // 这里角度是根据旋转前后推到出来的，很简单
-        for (double angle2 = -(90 - heading_angle1); 
-                angle2 < 90 + heading_angle1; angle2 += iter_angle2) {
+        for (double angle2 = -(90 - heading_angle1 - iter_angle2); 
+                    angle2 < 90 + heading_angle1 - iter_angle2; 
+                    angle2 += iter_angle2) {
             path.push_back(GetDestPoint(angle2, radius, path[1]));
             local_destination.push_back(path[2]);
 
             double heading_radians2 = 
                     atan2(path[2][1] - path[1][1], path[2][0] - path[1][0]);
             double heading_angle2 = heading_radians2 * 180 / M_PI;
-            for (double angle3 = -(90 - heading_angle2); 
-                    angle3 < 90 + heading_angle2; angle3 += iter_angle3) {
+            for (double angle3 = -(90 - heading_angle2 - iter_angle3); 
+                    angle3 < 90 + heading_angle2 - iter_angle3; 
+                    angle3 += iter_angle3) {
                 path.push_back(GetDestPoint(angle3, radius, path[2]));
                 local_destination.push_back(path[3]); 
                 local_solution.push_back(path);

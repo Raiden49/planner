@@ -87,8 +87,6 @@ Visualization Manager:
         All Enabled: false
         map:
           Value: false
-        new:
-          Value: true
         odom:
           Value: false
       Marker Alpha: 1
@@ -99,8 +97,6 @@ Visualization Manager:
       Show Names: false
       Tree:
         map:
-          new:
-            {}
           odom:
             {}
       Update Interval: 0
@@ -226,13 +222,13 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /best_local_path
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -298,4 +294,4 @@ Window Geometry:
     collapsed: false
   Width: 1395
   X: 63
-  Y: 70
+  Y: 33
