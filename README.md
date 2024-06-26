@@ -44,23 +44,23 @@
 
 |                            效果图                            | 优化算法 |
 | :----------------------------------------------------------: | -------- |
-| <img src="B:\something_for_work\proj_github\planner\docs\optim_reult.png" alt="optim_reult" style="zoom:50%;" /> | -        |
-| <img src="B:\something_for_work\proj_github\planner\docs\qp_result.png" alt="qp_result" style="zoom:50%;" /> | QP       |
-| <img src="B:\something_for_work\proj_github\planner\docs\bezier_result.png" alt="bezier_result" style="zoom:50%;" /> | Bezier   |
-| <img src="B:\something_for_work\proj_github\planner\docs\b_spline_result.png" alt="b_spline_result" style="zoom:50%;" /> | BSpline  |
+| <img src="./docs/optim_reult.png" alt="optim_reult" style="zoom:50%;" /> | -        |
+| <img src="./docs/qp_result.png" alt="qp_result" style="zoom:50%;" /> | QP       |
+| <img src="./docs/bezier_result.png" alt="bezier_result" style="zoom:50%;" /> | Bezier   |
+| <img src="./docs/b_spline_result.png" alt="b_spline_result" style="zoom:50%;" /> | BSpline  |
 
 ### 3. 局部规划
 
 |                            效果图                            | 算法       |
 | :----------------------------------------------------------: | ---------- |
-| <img src="B:\something_for_work\proj_github\planner\docs\offline_result.png" alt="offline_result" style="zoom:50%;" /> | 三次样条   |
-| <img src="B:\something_for_work\proj_github\planner\docs\online_result.png" alt="online_result" style="zoom:50%;" /> | 五次多项式 |
+| <img src="./docs/offline_result.png" alt="offline_result" style="zoom:50%;" /> | 三次样条   |
+| <img src="./docs/online_result.png" alt="online_result" style="zoom:50%;" /> | 五次多项式 |
 
 ### 4. 控制器跟踪
 
 规划路径为蓝色，优化后的全局路径为绿色，最终局部规划引导的轨迹为粉红色
 
-<img src="B:\something_for_work\proj_github\planner\docs\final_result.png" alt="final_result" style="zoom:50%;" />
+<img src="./docs/final_result.png" alt="final_result" style="zoom:50%;" />
 
 ## 更新日志
 
