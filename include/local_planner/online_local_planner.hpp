@@ -18,9 +18,9 @@ namespace local_planner
 class OnlineLocalPlanner : public LocalPlannerInterface {
     public:
         OnlineLocalPlanner(
-            const Eigen::MatrixXi& map, 
-            const std::vector<std::array<double, 2>>& ref_path) :
-            LocalPlannerInterface(map, ref_path) {};
+                const Eigen::MatrixXi& map, 
+                const std::vector<std::array<double, 2>>& ref_path) :
+                LocalPlannerInterface(map, ref_path) {};
         ~OnlineLocalPlanner() = default;
         
         std::vector<std::vector<std::array<double, 2>>> Process(
