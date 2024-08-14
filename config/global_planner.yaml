@@ -1,0 +1,11 @@
+HybridAstar : {
+  steering_angle: 15.0,
+  steering_angle_discrete_num: 1,
+  wheel_base: 0.2,
+  segment_length: 1.6,
+  segment_length_discrete_num: 8,
+  steering_penalty: 1.5,    # 1.5
+  reversing_penalty: 3.0,   # 3.0
+  steering_change_penalty: 2.0,   # 2.0
+  shot_distance: 2
+}

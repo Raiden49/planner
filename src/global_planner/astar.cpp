@@ -1,10 +1,10 @@
 /*
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:19 
- * @Last Modified by:   Raiden49 
- * @Last Modified time: 2024-06-26 10:26:19 
+ * @Last Modified by: Raiden49
+ * @Last Modified time: 2024-08-14 14:58:06
  */
-#include "plan/astar.hpp"
+#include "global_planner/astar.hpp"
 
 namespace global_planner
 {
@@ -72,19 +72,20 @@ bool AStar::NeighborSearch(AstarNode& node) {
     return false;
 }
 
-bool AStar::GetPath(AstarNode& node, std::vector<std::array<int, 2>>& path) {
+bool AStar::GetPath(AstarNode& node, std::vector<std::array<double, 2>>& path) {
     AstarNode current_node = node;
     while (1) {
         if (current_node.x == start_[0] && current_node.y == start_[1]) {
             break;
         }
-        path.push_back({current_node.x, current_node.y});
+        path.push_back(Map2World(current_node.x, current_node.y));
         current_node = *current_node.parent;
     }
+    std::reverse(path.begin(), path.end());
     return true;
 }
 
-bool AStar::GetPlan(std::vector<std::array<int, 2>>& path) {
+bool AStar::GetPlan(std::vector<std::array<double, 2>>& path) {
     AstarNode start_node;
     start_node.parent = std::make_shared<AstarNode>(start_node);;
     start_node.x = start_[0]; start_node.y = start_[1];

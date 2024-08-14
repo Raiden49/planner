@@ -80,7 +80,6 @@ class LocalPlannerInterface {
             int map_y = (y - origin_y_) / resolution_;
             return {map_x, map_y};
         }
-
         inline std::array<double, 2> Map2World(const int& x, const int& y) {
             double world_x = x * resolution_ + origin_x_;
             double world_y = y * resolution_ + origin_y_;

@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:19 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 10:56:52
+ * @Last Modified time: 2024-08-14 14:58:03
  */
 #ifndef PLAN_HPP_
 #define PLAN_HPP_
@@ -19,7 +19,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <Eigen/Dense>
 
-#include "plan/astar.hpp"
+#include "global_planner/astar.hpp"
+#include "global_planner/hybrid_astar.hpp"
 #include "optim/qp_optim.hpp"
 #include "optim/bezier_optim.hpp"
 #include "optim/b_spline_optim.hpp"
@@ -58,21 +59,18 @@ class Plan {
          */
         bool SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
                 geometry_msgs::TransformStamped& tf_stamped,
-                const std::shared_ptr<std::vector<std::array<double, 2>>>& 
-                path_ptr);
+                const std::shared_ptr<std::vector<std::array<double, 2>>>& path_ptr);
 
         /**
          * @brief 全局规划处理函数，规划出全局路径
          * 
          * @param global_path_msg 规划后的全局路径，用于可视化
-         * @param global_path 地图像素坐标系的全局路径
          * @param global_world_path 返回的全局路径，世界坐标系下
          * @return true 成功规划出全局路径
          * @return false 全局路径规划失败
          */
         bool GlobalPathProcess(
                 nav_msgs::Path& global_path_msg,
-                std::vector<std::array<int, 2>>& global_path,
                 std::vector<std::array<double, 2>>& global_world_path);
         /**
          * @brief 路径优化接口函数，对传入的路径通过指定方法做优化，主要是平滑，同时保持形状
@@ -102,6 +100,10 @@ class Plan {
                           const std::array<double, 2>& current_pos,
                           const std::vector<std::array<double, 2>>& ref_path,
                           std::vector<std::array<double, 2>>& best_local_path);
+
+        // void PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
+        //                         const std::vector<std::array<double, 2>>& path,
+        //                         const double& width, const double& length);
 
         /**
          * @brief 主运行函数

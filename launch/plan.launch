@@ -11,6 +11,7 @@
         <rosparam command="load" file="$(find planner)/config/optim_config.yaml"/>
         <rosparam command="load" file="$(find planner)/config/local_config.yaml"/>
         <rosparam command="load" file="$(find planner)/config/map_config.yaml"/>
+        <rosparam command="load" file="$(find planner)/config/global_planner.yaml"/>
     </node>
 
 </launch>

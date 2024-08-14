@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:14 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:28:27
+ * @Last Modified time: 2024-08-14 14:58:11
  */
 #include "plan/plan.hpp"
 
@@ -109,26 +109,51 @@ bool Plan::SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
 }
 
 bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
-        std::vector<std::array<int, 2>>& global_path, 
         std::vector<std::array<double, 2>>& global_world_path) {
 
     ROS_INFO("Start global plan");
 
     global_path_msg.poses.clear();
-    global_path.clear();
     global_world_path.clear();
 
     auto start = World2Map(start_[0], start_[1]);
     auto goal = World2Map(goal_[0], goal_[1]);
 
-    auto global_plan_ptr = 
+    std::shared_ptr<global_planner::GlobalPlannerInterface> global_plan_ptr = 
             std::make_shared<global_planner::AStar>(pgm_map_, start, goal);
+
+    double steering_angle = 
+            nh_.param("plan/HybridAstar/steering_angle", 10);
+    int steering_angle_discrete_num = 
+            nh_.param("plan/HybridAstar/steering_angle_discrete_num", 1);
+    double wheel_base = 
+            nh_.param("plan/HybridAstar/wheel_base", 0.10);
+    double segment_length = 
+            nh_.param("plan/HybridAstar/segment_length", 1.6);
+    int segment_length_discrete_num = 
+            nh_.param("plan/HybridAstar/segment_length_discrete_num", 8);
+    double steering_penalty = 
+            nh_.param("plan/HybridAstar/steering_penalty", 1.05);
+    double steering_change_penalty = 
+            nh_.param("plan/HybridAstar/steering_change_penalty", 1.5);
+    double reversing_penalty = 
+            nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
+    double shot_distance = 
+            nh_.param("plan/HybridAstar/shot_distance", 5.0);
+    global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
+            steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
+            segment_length_discrete_num, steering_penalty, steering_change_penalty, 
+            reversing_penalty, shot_distance, 0, 0, pgm_map_, start, goal);
+    
+    global_plan_ptr->origin_x_ = origin_x_;
+    global_plan_ptr->origin_y_ = origin_y_;
+    global_plan_ptr->resolution_ = resolution_;
 
     // std::cout << "start point" << start[0] << ", " << start[1] << std::endl;
     // std::cout << "goal point" << goal[0] << ", " << goal[1] << std::endl;
 
     clock_t start_time = clock();
-    if (!global_plan_ptr->GetPlan(global_path)) {
+    if (!global_plan_ptr->GetPlan(global_world_path)) {
         ROS_ERROR("Error getting global path");
         return false;
     }
@@ -136,10 +161,8 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     double run_time = (double)(end_time - start_time) * 1000 / CLOCKS_PER_SEC;
     std::cout << "Get the global path in " << run_time << " ms" << std::endl;
 
-    for (auto iter = global_path.end() - 1; iter != global_path.begin(); iter--) {
+    for (auto& world_point : global_world_path) {
 
-        auto world_point = Map2World((*iter)[0], (*iter)[1]);
-        global_world_path.push_back(world_point);
         geometry_msgs::PoseStamped pose;
         pose.header.stamp = ros::Time::now();
         pose.header.frame_id = "map";
@@ -150,7 +173,6 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     }
 
     return true;
-
 }
 
 std::vector<std::array<double, 2>> Plan::OptimPathProcess(
@@ -208,7 +230,7 @@ bool Plan::LocalProcess(const int& sim_index,
 
     static auto local_paths_pub = 
             nh_.advertise<visualization_msgs::MarkerArray>("local_paths", 1);
-    static auto dest_pub_ = 
+    static auto dest_pub = 
             nh_.advertise<visualization_msgs::Marker>("destionation", 1);
     static auto best_local_path_pub = 
             nh_.advertise<visualization_msgs::Marker>("best_local_path", 10);
@@ -274,7 +296,7 @@ bool Plan::LocalProcess(const int& sim_index,
         vtx.y = destination[i][1];
         destination_marker.points.push_back(vtx);
     }
-    dest_pub_.publish(destination_marker);
+    dest_pub.publish(destination_marker);
     
     for (auto &point : best_local_path) {
         geometry_msgs::Point vtx;
@@ -288,6 +310,26 @@ bool Plan::LocalProcess(const int& sim_index,
     return true;
     
 }
+
+// void Plan::PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
+//                               const std::vector<std::array<double, 2>>& path,
+//                               const double& width, const double& length) {
+//     visualization_msgs::Marker vehicle;
+//     for (const auto& point : path) {
+//         vehicle.header.frame_id = "map";
+//         vehicle.header.stamp = ros::Time::now();
+//         vehicle.type = visualization_msgs::Marker::CUBE;
+//         vehicle.scale.x = width;
+//         vehicle.scale.y = length;
+//         vehicle.color.a = 0.1;
+//         vehicle.color.r = 0.0;
+//         vehicle.color.g = 0.0;
+//         vehicle.color.b = 1.0;
+//         vehicle.pose.position.x = point[0];
+//         vehicle.pose.position.y = point[1];
+//         vehicle.pose.position.z = 0.0;
+//     }
+// }
 
 void Plan::Process() {
 
@@ -304,8 +346,9 @@ void Plan::Process() {
     auto optim_local_path_pub = 
             nh_.advertise<nav_msgs::Path>("optim_local_path", 10);  
     auto trajectory_pub = nh_.advertise<nav_msgs::Path>("trajectory", 10); 
-    
-    std::vector<std::array<int, 2>> global_path;
+    auto robot_path_pub = 
+            nh_.advertise<visualization_msgs::MarkerArray>("robot_paths", 1);
+
     std::vector<std::array<double, 2>> global_world_path;
     std::vector<std::array<double, 2>> best_local_path;
     std::shared_ptr<std::vector<std::array<double, 2>>> path_ptr = nullptr;
@@ -340,8 +383,7 @@ void Plan::Process() {
             trajectory_msg.poses.clear();
 
             // 全局规划规划出路径后，肯定是要进行优化的
-            if(GlobalPathProcess(global_path_msg, global_path, 
-                                 global_world_path)) {
+            if(GlobalPathProcess(global_path_msg, global_world_path)) {
                 auto optim_path = OptimPathProcess(
                         optim_path_msg, global_world_path, optim_method);   
                 path_ptr = std::make_shared<

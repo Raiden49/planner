@@ -87,6 +87,8 @@ Visualization Manager:
         All Enabled: false
         map:
           Value: false
+        new:
+          Value: true
         odom:
           Value: false
       Marker Alpha: 1
@@ -97,6 +99,8 @@ Visualization Manager:
       Show Names: false
       Tree:
         map:
+          new:
+            {}
           odom:
             {}
       Update Interval: 0
@@ -105,11 +109,11 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 114; 159; 207
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
-      Line Style: Billboards
+      Line Style: Lines
       Line Width: 0.029999999329447746
       Name: Path
       Offset:
@@ -124,12 +128,12 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /global_path
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -148,12 +152,12 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /optim_global_path
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 252; 233; 79
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -172,7 +176,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /optim_local_path
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /local_paths
@@ -193,7 +197,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 242; 156; 177
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -212,7 +216,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /trajectory
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /destionation
@@ -294,4 +298,4 @@ Window Geometry:
     collapsed: false
   Width: 1395
   X: 63
-  Y: 33
+  Y: 27
