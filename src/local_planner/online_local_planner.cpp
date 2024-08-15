@@ -2,25 +2,23 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:36 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:49:02
+ * @Last Modified time: 2024-08-15 16:02:26
  */
 #include "local_planner/online_local_planner.hpp"
 
 namespace local_planner 
 {
-std::vector<std::vector<std::array<double, 2>>> OnlineLocalPlanner::Process(
-        const double& radius,
-        const std::array<double, 2>& pos, 
-        const std::array<double, 2>& pos_ahead, 
-        std::vector<std::array<double, 2>>& destination) {
+std::vector<std::vector<Point3d>> OnlineLocalPlanner::Process(
+        const double& radius, const Point3d& pos, 
+        const Point3d& pos_ahead, std::vector<Point3d>& destination) {
     
-    std::vector<std::vector<std::array<double, 2>>> local_solution;
-    std::vector<std::vector<std::array<double, 2>>> final_solution;
+    std::vector<std::vector<Point3d>> local_solution;
+    std::vector<std::vector<Point3d>> final_solution;
 
     auto local_destinaton = destination;
-    destination.push_back({pos[0], pos[1]});
-    double x_0 = pos[0], y_0 = pos[1];
-    double ahead_x = pos_ahead[0], ahead_y = pos_ahead[1];
+    destination.push_back(pos);
+    double x_0 = pos.x, y_0 = pos.y;
+    double ahead_x = pos_ahead.x, ahead_y = pos_ahead.y;
     int current_size = destination.size(), last_size = 0;
 
     clock_t start_time = clock();
@@ -31,7 +29,7 @@ std::vector<std::vector<std::array<double, 2>>> OnlineLocalPlanner::Process(
 
     double iter_length = radius / 30, y = radius;
     for (double x = -y; x <= y; x += iter_length) {
-        local_destinaton.push_back({x, y});
+        local_destinaton.push_back(Point3d(x, y, 0));
     }
 
     double iter_num = 10;
@@ -39,19 +37,19 @@ std::vector<std::vector<std::array<double, 2>>> OnlineLocalPlanner::Process(
 
     for (auto dest : local_destinaton) {
 
-        double x = dest[0];
-        double y = dest[1];
+        double x = dest.x;
+        double y = dest.y;
 
         if (x == 0) {
-            std::vector<std::array<double, 2>> single_path;
+            std::vector<Point3d> single_path;
             double iter_radius = y / iter_num;
 
             for (int j = 0; j < iter_num + 1; j++) {
-                std::array<double, 2> point;
+                Point3d point;
                 double iter_y = j * iter_radius;
                 double iter_x = 0;
 
-                single_path.push_back({iter_x, iter_y});
+                single_path.push_back(Point3d(iter_x, iter_y, 0));
             }
             local_solution.push_back(single_path);
             continue;
@@ -67,13 +65,13 @@ std::vector<std::vector<std::array<double, 2>>> OnlineLocalPlanner::Process(
         B << 0, x > 0 ? 3 : -3, 0, y, x > 0 ? 3 : -3, 0;
         auto factor_matrix = A.inverse() * B;
 
-        std::vector<std::array<double, 2>> single_path;
+        std::vector<Point3d> single_path;
 
         double iter_radius = x / iter_num;
 
         // 根据计算出来的五次多项式系数，计算多个点合成一条路径
         for (int j = 0; j < iter_num + 1; j++) {
-            std::array<double, 2> point;
+            Point3d point;
             double iter_x = j * iter_radius;
             double iter_y = factor_matrix(0, 0) * pow(iter_x, 5) + 
                             factor_matrix(1, 0) * pow(iter_x, 4) + 
@@ -82,22 +80,21 @@ std::vector<std::vector<std::array<double, 2>>> OnlineLocalPlanner::Process(
                             factor_matrix(4, 0) * pow(iter_x, 1) + 
                             factor_matrix(5, 0);
 
-            single_path.push_back({iter_x, iter_y});
+            single_path.push_back(Point3d(iter_x, iter_y, 0));
         }
         local_solution.push_back(single_path);
     }
 
     for (auto& local_solu : local_solution) {
-        std::vector<std::array<double, 2>> single_path;
+        std::vector<Point3d> single_path;
         for (auto local_point : local_solu) {
-            auto global_point = 
-                    Local2Global(local_point, {x_0, y_0}, heading);
+            auto global_point = Local2Global(local_point, pos, heading);
             single_path.push_back(global_point);
         }
         final_solution.push_back(single_path);
     }
     for (auto& dest : local_destinaton) {
-        auto temp_dest = Local2Global(dest, {x_0, y_0}, heading);
+        auto temp_dest = Local2Global(dest, pos, heading);
         destination.push_back(temp_dest);
     }
 

@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:14 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-14 14:58:11
+ * @Last Modified time: 2024-08-15 16:02:09
  */
 #include "plan/plan.hpp"
 
@@ -28,31 +28,31 @@ void Plan::StartCallBack(
     ROS_INFO("Received the start point: %.2f, %.2f", 
             msg->pose.pose.position.x, msg->pose.pose.position.y);
     start_flag_ = true;
-    start_[0] = msg->pose.pose.position.x;
-    start_[1] = msg->pose.pose.position.y;
+    start_.x = msg->pose.pose.position.x;
+    start_.y = msg->pose.pose.position.y;
 }
 
 void Plan::GoalCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     ROS_INFO("Received the goal point: %.2f, %.2f", 
             msg->pose.position.x, msg->pose.position.y);
     goal_flag_ = true;
-    goal_[0] = msg->pose.position.x;
-    goal_[1] = msg->pose.position.y;
+    goal_.x = msg->pose.position.x;
+    goal_.y = msg->pose.position.y;
 }
 
 void Plan::OdomCallBack(const nav_msgs::Odometry::ConstPtr& msg) {
     // ROS_INFO("Current robot pos: %.2f, %.2f", 
     //         msg->pose.pose.position.x, msg->pose.pose.position.y);
-    current_pos_[0] = msg->pose.pose.position.x;
-    current_pos_[1] = msg->pose.pose.position.y; 
+    current_pos_.x = msg->pose.pose.position.x;
+    current_pos_.y = msg->pose.pose.position.y; 
     current_radian_ = tf::getYaw(msg->pose.pose.orientation);
 }
 
-bool Plan::SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
+bool Plan::SimControllel(int& sim_index, const Point3d& next_point,
         geometry_msgs::TransformStamped& tf_stamped,
-        const std::shared_ptr<std::vector<std::array<double, 2>>>& path_ptr) {
+        const std::shared_ptr<std::vector<Point3d>>& path_ptr) {
 
-    static auto current_pos = next_pos;
+    static auto current_pos = next_point;
 
     if (path_ptr != nullptr) {
 
@@ -60,10 +60,10 @@ bool Plan::SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
         tf_stamped.header.frame_id = "map";
         tf_stamped.child_frame_id = "new";
 
-        tf_stamped.transform.translation.x = next_pos[0];
-        tf_stamped.transform.translation.y = next_pos[1];
-        double theta = atan2(next_pos[1] - current_pos[1], 
-                             next_pos[0] - current_pos[0]);
+        tf_stamped.transform.translation.x = next_point.x;
+        tf_stamped.transform.translation.y = next_point.y;
+        double theta = atan2(next_point.y - current_pos.y, 
+                             next_point.x - current_pos.x);
         tf2::Quaternion qtn;
         if (sim_index == 0) {
             qtn.setRPY(0, 0, 0);
@@ -83,13 +83,13 @@ bool Plan::SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
         while (1) {
             count += 1;
             auto current_dis = 
-                    m_util::EuclideanDis(next_pos[0], next_pos[1], 
-                    path_ptr->at(temp_index)[0], 
-                    path_ptr->at(temp_index)[1]);
+                    m_util::EuclideanDis(next_point.x, next_point.y, 
+                    path_ptr->at(temp_index).x, 
+                    path_ptr->at(temp_index).y);
             auto next_dis = temp_index + count < path_ptr->size() ? 
-                    m_util::EuclideanDis(next_pos[0], next_pos[1],
-                    path_ptr->at(temp_index + count)[0],
-                    path_ptr->at(temp_index + count)[1]) : 
+                    m_util::EuclideanDis(next_point.x, next_point.y,
+                    path_ptr->at(temp_index + count).x,
+                    path_ptr->at(temp_index + count).y) : 
                     current_dis;
             if (current_dis > next_dis) {
                 temp_index = temp_index + count;
@@ -101,7 +101,7 @@ bool Plan::SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
             }
         }
 
-        current_pos = next_pos;
+        current_pos = next_point;
         return true;
     }
 
@@ -109,15 +109,15 @@ bool Plan::SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
 }
 
 bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
-        std::vector<std::array<double, 2>>& global_world_path) {
+                             std::vector<Point3d>& global_world_path) {
 
     ROS_INFO("Start global plan");
 
     global_path_msg.poses.clear();
     global_world_path.clear();
 
-    auto start = World2Map(start_[0], start_[1]);
-    auto goal = World2Map(goal_[0], goal_[1]);
+    auto start = World2Map(start_.x, start_.y);
+    auto goal = World2Map(goal_.x, goal_.y);
 
     std::shared_ptr<global_planner::GlobalPlannerInterface> global_plan_ptr = 
             std::make_shared<global_planner::AStar>(pgm_map_, start, goal);
@@ -166,8 +166,8 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
         geometry_msgs::PoseStamped pose;
         pose.header.stamp = ros::Time::now();
         pose.header.frame_id = "map";
-        pose.pose.position.x = world_point[0];
-        pose.pose.position.y = world_point[1];
+        pose.pose.position.x = world_point.x;
+        pose.pose.position.y = world_point.y;
         pose.pose.orientation.w = 1.0;
         global_path_msg.poses.push_back(pose);
     }
@@ -175,10 +175,9 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     return true;
 }
 
-std::vector<std::array<double, 2>> Plan::OptimPathProcess(
-        nav_msgs::Path& optim_path_msg,
-        const std::vector<std::array<double, 2>>& world_path,
-        const std::string& optim_method) {
+std::vector<Point3d> Plan::OptimPathProcess(nav_msgs::Path& optim_path_msg,
+                                            const std::vector<Point3d>& world_path,
+                                            const std::string& optim_method) {
 
     optim_path_msg.poses.clear();
 
@@ -213,8 +212,8 @@ std::vector<std::array<double, 2>> Plan::OptimPathProcess(
         geometry_msgs::PoseStamped pose;
         pose.header.stamp = ros::Time::now();
         pose.header.frame_id = "map";
-        pose.pose.position.x = point[0];
-        pose.pose.position.y = point[1];
+        pose.pose.position.x = point.x;
+        pose.pose.position.y = point.y;
         pose.pose.orientation.w = 1.0;
         optim_path_msg.poses.push_back(pose);
     }
@@ -223,10 +222,10 @@ std::vector<std::array<double, 2>> Plan::OptimPathProcess(
 }
 
 bool Plan::LocalProcess(const int& sim_index, 
-                        const std::array<double, 2>& ahead_pos,
-                        const std::array<double, 2>& current_pos,
-                        const std::vector<std::array<double, 2>>& ref_path,
-                        std::vector<std::array<double, 2>>& best_local_path) {
+                        const Point3d& ahead_pos,
+                        const Point3d& current_pos,
+                        const std::vector<Point3d>& ref_path,
+                        std::vector<Point3d>& best_local_path) {
 
     static auto local_paths_pub = 
             nh_.advertise<visualization_msgs::MarkerArray>("local_paths", 1);
@@ -243,7 +242,7 @@ bool Plan::LocalProcess(const int& sim_index,
 
     double radius = 0;
     std::string local_method;
-    std::vector<std::array<double, 2>> destination;
+    std::vector<Point3d> destination;
 
     ros::param::get("plan/local_method", local_method);
     ros::param::get("plan/online/radius", radius);
@@ -272,8 +271,8 @@ bool Plan::LocalProcess(const int& sim_index,
                 0.3, {1., 0., 1.}, {0.005, 0.005}, "map", "line", i);
         for (int j = 0; j < local_path[i].size(); j++) {
             geometry_msgs::Point vtx;
-            vtx.x = local_path[i][j][0];
-            vtx.y = local_path[i][j][1];
+            vtx.x = local_path[i][j].x;
+            vtx.y = local_path[i][j].y;
             
             bool flag = false;
             auto map_point = World2Map(vtx.x, vtx.y);
@@ -292,16 +291,16 @@ bool Plan::LocalProcess(const int& sim_index,
 
     for (int i = 0; i < destination.size(); i++) {
         geometry_msgs::Point vtx;
-        vtx.x = destination[i][0];
-        vtx.y = destination[i][1];
+        vtx.x = destination[i].x;
+        vtx.y = destination[i].y;
         destination_marker.points.push_back(vtx);
     }
     dest_pub.publish(destination_marker);
     
     for (auto &point : best_local_path) {
         geometry_msgs::Point vtx;
-        vtx.x = point[0];
-        vtx.y = point[1];
+        vtx.x = point.x;
+        vtx.y = point.y;
         best_path_marker.points.push_back(vtx);
     }
     
@@ -349,10 +348,10 @@ void Plan::Process() {
     auto robot_path_pub = 
             nh_.advertise<visualization_msgs::MarkerArray>("robot_paths", 1);
 
-    std::vector<std::array<double, 2>> global_world_path;
-    std::vector<std::array<double, 2>> best_local_path;
-    std::shared_ptr<std::vector<std::array<double, 2>>> path_ptr = nullptr;
-    std::shared_ptr<std::vector<std::array<double, 2>>> local_path_ptr = nullptr;
+    std::vector<Point3d> global_world_path;
+    std::vector<Point3d> best_local_path;
+    std::shared_ptr<std::vector<Point3d>> path_ptr = nullptr;
+    std::shared_ptr<std::vector<Point3d>> local_path_ptr = nullptr;
     nav_msgs::Path global_path_msg, optim_path_msg, optim_local_path_msg;
     nav_msgs::Path trajectory_msg;
     global_path_msg.header.frame_id = "map";
@@ -386,8 +385,7 @@ void Plan::Process() {
             if(GlobalPathProcess(global_path_msg, global_world_path)) {
                 auto optim_path = OptimPathProcess(
                         optim_path_msg, global_world_path, optim_method);   
-                path_ptr = std::make_shared<
-                        std::vector<std::array<double, 2>>>(optim_path);   
+                path_ptr = std::make_shared<std::vector<Point3d>>(optim_path);   
                 current_pos = path_ptr->at(0); 
             }
         }
@@ -398,18 +396,17 @@ void Plan::Process() {
             // 因为仿真机器人朝向是根据前后两个位置直接计算的，这样比较方便
             if (first_local_flag) {
                 first_local_flag = false;
-                std::vector<std::array<double, 2>> temp_path;
+                std::vector<Point3d> temp_path;
                 for (int i = 0; i < 2 * local_frequency; i++) {
                     temp_path.push_back(path_ptr->at(i));
                 }
-                local_path_ptr = std::make_shared<
-                        std::vector<std::array<double, 2>>>(temp_path);
+                local_path_ptr = std::make_shared<std::vector<Point3d>>(temp_path);
                 frame_count = 0;
             }
             if (frame_count == local_frequency) {
                 // 取当前局部规划的路径后五个路径点，以及下一次规划路径的前五个路径点，
                 // 相当于为两次规划添加过渡，要不会有剧烈抖动
-                std::vector<std::array<double, 2>> temp_path;
+                std::vector<Point3d> temp_path;
                 for (int i = frame_count; i < 2 * local_frequency; i++) {
                     temp_path.push_back(local_path_ptr->at(i));
                 }
@@ -421,8 +418,7 @@ void Plan::Process() {
                     }
                     auto optim_local_path = OptimPathProcess(
                             optim_local_path_msg, temp_path);
-                    local_path_ptr = std::make_shared<std::vector<
-                            std::array<double, 2>>>(optim_local_path);
+                    local_path_ptr = std::make_shared<std::vector<Point3d>>(optim_local_path);
                     frame_count = 0;
                 }
             }
@@ -441,8 +437,8 @@ void Plan::Process() {
         geometry_msgs::PoseStamped pose;
         pose.header.stamp = ros::Time::now();
         pose.header.frame_id = "map";
-        pose.pose.position.x = current_pos[0];
-        pose.pose.position.y = current_pos[1];
+        pose.pose.position.x = current_pos.x;
+        pose.pose.position.y = current_pos.y;
         pose.pose.orientation.w = 1.0;
         if (path_ptr != nullptr) {
             trajectory_msg.poses.push_back(pose);

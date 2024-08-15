@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:56 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:02:04
+ * @Last Modified time: 2024-08-15 16:02:22
  */
 #ifndef B_SPLINE_OPTIM_HPP_
 #define B_SPLINE_OPTIM_HPP_
@@ -16,8 +16,7 @@ namespace optimization
  */
 class BSpline : public OptimInterface {
     public:
-        BSpline(const std::vector<std::array<double, 2>>& path, 
-                const int& num_samples) : 
+        BSpline(const std::vector<Point3d>& path, const int& num_samples) : 
                 OptimInterface(path), num_samples_(num_samples){};
         ~BSpline() = default;
     
@@ -34,7 +33,7 @@ class BSpline : public OptimInterface {
     std::vector<double> GenerateKnots(const int& k, 
                                       const int& num_control_points);
     
-    std::vector<std::array<double, 2>> Process() override;
+    std::vector<Point3d> Process() override;
 
     private:
         // 插值点数目，这里是所有路径点中的插值点数目

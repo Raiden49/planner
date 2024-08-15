@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:59 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:06:35
+ * @Last Modified time: 2024-08-15 15:34:12
  */
 #ifndef LOCAL_PLANNER_INTERFACE_HPP_
 #define LOCAL_PLANNER_INTERFACE_HPP_
@@ -22,31 +22,26 @@ namespace local_planner
 /**
  * @brief 局部规划父类函数，不包含生成路径的实现
  */
+using Point3d = m_util::Point3d;
 class LocalPlannerInterface {
     public:
-        LocalPlannerInterface(
-                const Eigen::MatrixXi& map, 
-                const std::vector<std::array<double, 2>>& ref_path) {
+        LocalPlannerInterface(const Eigen::MatrixXi& map, 
+                              const std::vector<Point3d>& ref_path) {
             map_ptr_ = std::make_shared<Eigen::MatrixXi>(map);
-            path_ptr_ = std::make_shared<
-                    std::vector<std::array<double, 2>>>(ref_path);
+            path_ptr_ = std::make_shared<std::vector<Point3d>>(ref_path);
         }
         virtual ~LocalPlannerInterface() {};
 
         /**
          * @brief 旋转后的坐标系的点变换到世界坐标系下
          */
-        std::array<double, 2> Local2Global(
-                const std::array<double, 2>& local_point, 
-                const std::array<double, 2>& shift_point,
-                const double& theta);
+        Point3d Local2Global(const Point3d& local_point, const Point3d& shift_point,
+                             const double& theta);
         /**
          * @brief 世界坐标系下点变换到旋转后坐标系下
          */
-        std::array<double, 2> Global2Local(
-                const std::array<double, 2>& global_point, 
-                const std::array<double, 2>& shift_point,
-                const double& theta);
+        Point3d Global2Local(const Point3d& global_point, const Point3d& shift_point,
+                             const double& theta);
         /**
          * @brief 生成路径的主运行函数，纯虚函数
          * 
@@ -56,22 +51,20 @@ class LocalPlannerInterface {
          * @param destination 生成的路径终点信息
          * @return std::vector<std::vector<std::array<double, 2>>> 所有生成的路径
          */
-        virtual std::vector<std::vector<std::array<double, 2>>> Process(
-                const double& radius,
-                const std::array<double, 2>& pos, 
-                const std::array<double, 2>& pos_ahead, 
-                std::vector<std::array<double, 2>>& destination) = 0;
+        virtual std::vector<std::vector<Point3d>> Process(
+                const double& radius, const Point3d& pos, 
+                const Point3d& pos_ahead, std::vector<Point3d>& destination) = 0;
         /**
          * @brief 从所有生成的路径中选取得分最高的一个，根据距离障碍物距离和参考线距离打分
          * 
          * @return std::vector<std::array<double, 2>> 得分最高的路径
          */
-        std::vector<std::array<double, 2>> GetBestPath(int current_index,
-                const std::vector<std::vector<std::array<double, 2>>>& paths);
+        std::vector<Point3d> GetBestPath(
+                int current_index, const std::vector<std::vector<Point3d>>& paths);
 
     public:
         double resolution_, origin_x_, origin_y_;
-        std::shared_ptr<const std::vector<std::array<double, 2>>> path_ptr_;
+        std::shared_ptr<const std::vector<Point3d>> path_ptr_;
         std::shared_ptr<const Eigen::MatrixXi> map_ptr_;
 
     public:

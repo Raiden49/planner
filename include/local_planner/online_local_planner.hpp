@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:25:07 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:16:14
+ * @Last Modified time: 2024-08-15 15:41:14
  */
 #ifndef ONLINE_LOCAL_PLANNER_HPP_
 #define ONLINE_LOCAL_PLANNER_HPP_
@@ -17,17 +17,14 @@ namespace local_planner
  */
 class OnlineLocalPlanner : public LocalPlannerInterface {
     public:
-        OnlineLocalPlanner(
-                const Eigen::MatrixXi& map, 
-                const std::vector<std::array<double, 2>>& ref_path) :
-                LocalPlannerInterface(map, ref_path) {};
+        OnlineLocalPlanner(const Eigen::MatrixXi& map, 
+                           const std::vector<Point3d>& ref_path) :
+                           LocalPlannerInterface(map, ref_path) {};
         ~OnlineLocalPlanner() = default;
         
-        std::vector<std::vector<std::array<double, 2>>> Process(
-                const double& radius,
-                const std::array<double, 2>& pos, 
-                const std::array<double, 2>& pos_ahead, 
-                std::vector<std::array<double, 2>>& destination) override;
+        std::vector<std::vector<Point3d>> Process(
+                const double& radius, const Point3d& pos, 
+                const Point3d& pos_ahead, std::vector<Point3d>& destination) override;
 };
 }
 

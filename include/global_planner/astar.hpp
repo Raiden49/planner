@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:41 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 10:31:22
+ * @Last Modified time: 2024-08-15 15:18:11
  */
 #include "global_planner/global_planner_interface.hpp"
 
@@ -30,8 +30,8 @@ class AStar : public GlobalPlannerInterface {
         
         bool NeighborSearch(AstarNode& node);
         double GetNodeCost(const AstarNode& node);
-        bool GetPath(AstarNode& node, std::vector<std::array<double, 2>>& path);
-        bool GetPlan(std::vector<std::array<double, 2>>& path) override;
+        bool GetPath(AstarNode& node, std::vector<Point3d>& path);
+        bool GetPlan(std::vector<Point3d>& path) override;
     private:
         std::vector<AstarNode> close_set_;
         std::vector<AstarNode> open_set_;

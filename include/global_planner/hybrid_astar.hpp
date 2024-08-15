@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-07-19 16:37:59 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-14 14:57:46
+ * @Last Modified time: 2024-08-15 15:19:23
  */
 #ifndef HYBRID_ASTAR_HPP_
 #define HYBRID_ASTAR_HPP_
@@ -66,7 +66,7 @@ class HybridAstar : public GlobalPlannerInterface {
         inline std::vector<int> GetNodePtrMapIndex(const Point3d& point);
         std::vector<HybridNode> GetNeighborNodes(const HybridNode& current_node);
         bool Search(const Point3d& start_point, const Point3d& goal_point);
-        bool GetPlan(std::vector<std::array<double, 2>>& path) override;
+        bool GetPlan(std::vector<Point3d>& path) override;
 
     private:
         // HybridNode ***node_state_map_;

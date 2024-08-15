@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:19 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-14 14:58:03
+ * @Last Modified time: 2024-08-15 16:02:08
  */
 #ifndef PLAN_HPP_
 #define PLAN_HPP_
@@ -32,6 +32,7 @@ namespace plan
 /**
  * @brief 规划整体框架实现
  */
+using Point3d = m_util::Point3d;
 class Plan {
     public:
         Plan(ros::NodeHandle& nh) : nh_(nh) {
@@ -57,9 +58,9 @@ class Plan {
          * @return true 可以成功跟踪
          * @return false 不可以跟踪
          */
-        bool SimControllel(int& sim_index, const std::array<double, 2>& next_pos,
+        bool SimControllel(int& sim_index, const Point3d& next_point,
                 geometry_msgs::TransformStamped& tf_stamped,
-                const std::shared_ptr<std::vector<std::array<double, 2>>>& path_ptr);
+                const std::shared_ptr<std::vector<Point3d>>& path_ptr);
 
         /**
          * @brief 全局规划处理函数，规划出全局路径
@@ -69,9 +70,8 @@ class Plan {
          * @return true 成功规划出全局路径
          * @return false 全局路径规划失败
          */
-        bool GlobalPathProcess(
-                nav_msgs::Path& global_path_msg,
-                std::vector<std::array<double, 2>>& global_world_path);
+        bool GlobalPathProcess(nav_msgs::Path& global_path_msg,
+                               std::vector<Point3d>& global_world_path);
         /**
          * @brief 路径优化接口函数，对传入的路径通过指定方法做优化，主要是平滑，同时保持形状
          * 
@@ -80,10 +80,9 @@ class Plan {
          * @param optim_method 指定优化方法，默认用二次规划
          * @return std::vector<std::array<double, 2>> 优化后路径
          */
-        std::vector<std::array<double, 2>> OptimPathProcess(
-                nav_msgs::Path& optim_path_msg,
-                const std::vector<std::array<double, 2>>& world_path,
-                const std::string& optim_method = "QP");
+        std::vector<Point3d> OptimPathProcess(nav_msgs::Path& optim_path_msg,
+                                              const std::vector<Point3d>& world_path,
+                                              const std::string& optim_method = "QP");
         /**
          * @brief 局部规划处理函数，整体流程是：生成一堆路径－＞选择得分最高的一条－＞优化－＞作为底层控制要跟踪的路径
          * 
@@ -96,10 +95,10 @@ class Plan {
          * @return false 局部规划不成功
          */
         bool LocalProcess(const int& sim_index, 
-                          const std::array<double, 2>& ahead_pos,
-                          const std::array<double, 2>& current_pos,
-                          const std::vector<std::array<double, 2>>& ref_path,
-                          std::vector<std::array<double, 2>>& best_local_path);
+                          const Point3d& ahead_pos,
+                          const Point3d& current_pos,
+                          const std::vector<Point3d>& ref_path,
+                          std::vector<Point3d>& best_local_path);
 
         // void PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
         //                         const std::vector<std::array<double, 2>>& path,
@@ -112,7 +111,7 @@ class Plan {
 
     private:
         ros::NodeHandle nh_;
-        std::array<double, 2> goal_{0, 0}, start_{0, 0}, current_pos_{0, 0};
+        Point3d goal_, start_, current_pos_;
         //　地图信息
         int width_, height_;
         double resolution_, origin_x_, origin_y_;

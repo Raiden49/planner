@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:28 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:44:47
+ * @Last Modified time: 2024-08-15 16:02:14
  */
 #include "optim/qp_optim.hpp"
 
@@ -57,16 +57,16 @@ bool QP::InitSolver(Eigen::SparseMatrix<double>& hessian,
 
     // 起点与终点不进行优化处理，即把他们对应的上下界设置为本身就可以
     for (int num = 0; num < 2 * n; num += 2) {
-        gradient(num, 0) = -2 * path_ptr_->at(num / 2)[0];
-        gradient(num + 1, 0) = -2 * path_ptr_->at(num / 2)[1];
+        gradient(num, 0) = -2 * path_ptr_->at(num / 2).x;
+        gradient(num + 1, 0) = -2 * path_ptr_->at(num / 2).y;
         lower_bound(num, 0) = 
-                path_ptr_->at(num / 2)[0] + (num == 0 ? 0 : lower_bound_);
+                path_ptr_->at(num / 2).x + (num == 0 ? 0 : lower_bound_);
         lower_bound(num + 1, 0) = 
-                path_ptr_->at(num / 2)[1] + (num == 0 ? 0 : lower_bound_);
+                path_ptr_->at(num / 2).y + (num == 0 ? 0 : lower_bound_);
         upper_bound(num, 0) = 
-                path_ptr_->at(num / 2)[0] + (num == 0 ? 0 : upper_bound_);
+                path_ptr_->at(num / 2).x + (num == 0 ? 0 : upper_bound_);
         upper_bound(num + 1, 0) = 
-                path_ptr_->at(num / 2)[1] + (num == 0 ? 0 : upper_bound_);
+                path_ptr_->at(num / 2).y + (num == 0 ? 0 : upper_bound_);
     }
 
     hessian = 2. * (weight_smooth_ * A1 * A1.transpose() + 
@@ -77,10 +77,10 @@ bool QP::InitSolver(Eigen::SparseMatrix<double>& hessian,
     return true;
 }
 
-std::vector<std::array<double, 2>> QP::Process() {
+std::vector<Point3d> QP::Process() {
     
     OsqpEigen::Solver solver;
-    std::vector<std::array<double, 2>> opti_path;
+    std::vector<Point3d> opti_path;
 
     int n = path_ptr_->size();
     Eigen::VectorXd gradient(2*n), lower_bound(2*n), upper_bound(2*n);
@@ -117,7 +117,7 @@ std::vector<std::array<double, 2>> QP::Process() {
 
     Eigen::VectorXd solution = solver.getSolution();
     for (int i = 0; i < solution.size(); i += 2) {
-        opti_path.push_back({solution(i, 0), solution(i + 1, 0)});
+        opti_path.push_back(Point3d({solution(i, 0), solution(i + 1, 0)}));
     }
     return opti_path;
 }

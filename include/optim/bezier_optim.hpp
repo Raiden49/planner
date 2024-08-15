@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:53 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:00:26
+ * @Last Modified time: 2024-08-15 16:02:24
  */
 #ifndef BEZIER_OPTIM_HPP_
 #define BEZIER_OPTIM_HPP_
@@ -16,9 +16,8 @@ namespace optimization
  */
 class Bezier : public OptimInterface {
     public:
-        Bezier(const std::vector<std::array<double, 2>>& path, 
-                const int& num_samples) : 
-                OptimInterface(path), num_samples_(num_samples) {};
+        Bezier(const std::vector<Point3d>& path, const int& num_samples) : 
+               OptimInterface(path), num_samples_(num_samples) {};
         ~Bezier() = default;
 
         /**
@@ -34,8 +33,8 @@ class Bezier : public OptimInterface {
          * 
          * @return std::vector<std::array<double, 2>> 控制点向量
          */
-        std::vector<std::array<double, 2>> GenerateControlPoints();
-        std::vector<std::array<double, 2>> Process() override;
+        std::vector<Point3d> GenerateControlPoints();
+        std::vector<Point3d> Process() override;
 
     private:
         //　差值点数目，这里是每两个路径点中的插值点数目

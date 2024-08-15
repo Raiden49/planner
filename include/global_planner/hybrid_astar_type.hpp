@@ -5,13 +5,13 @@
 
 namespace global_planner
 {
-struct Point3d {
-    double x;
-    double y;
-    double yaw;
-    Point3d(double x, double y, double yaw) : x(x), y(y), yaw(yaw) {};
-    Point3d() = delete;
-};
+// struct Point3d {
+//     double x;
+//     double y;
+//     double yaw;
+//     Point3d(double x, double y, double yaw) : x(x), y(y), yaw(yaw) {};
+//     Point3d() = delete;
+// };
 
 struct HybridNode {
     enum NODE_STATUS {

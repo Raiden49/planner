@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:26 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:44:37
+ * @Last Modified time: 2024-08-15 16:02:18
  */
 #include "optim/bezier_optim.hpp"
 
@@ -19,8 +19,8 @@ int Bezier::Binomial(const int& n, const int& i) {
     return factorial(n) / (factorial(i) * factorial(n - i));
 }
 
-std::vector<std::array<double, 2>> Bezier::GenerateControlPoints() {
-    std::vector<std::array<double, 2>> control_points;
+std::vector<Point3d> Bezier::GenerateControlPoints() {
+    std::vector<Point3d> control_points;
     control_points.push_back(path_ptr_->at(0));
 
     if (path_ptr_->size() < 2) {
@@ -35,14 +35,14 @@ std::vector<std::array<double, 2>> Bezier::GenerateControlPoints() {
         auto p3 = path_ptr_->at(i + 1);
 
         if (i == 0) {
-            p1 = {(2 * p0[0] + p3[0]) / 3, (2 * p0[1] + p3[1]) / 3};
+            p1 = Point3d({(2 * p0.x + p3.x) / 3, (2 * p0.y + p3.y) / 3});
         } 
         else {
             auto last_p1 = control_points.at(control_points.size() - 2);
-            p1 = {2 * p0[0] - last_p1[0], 2 * p0[1] - last_p1[1]};
+            p1 = Point3d({2 * p0.x - last_p1.x, 2 * p0.y - last_p1.y});
         }
 
-        p2 = {(p0[0] + 2 * p3[0]) / 3, (p0[1] + 2 * p3[1]) / 3};
+        p2 = Point3d({(p0.x + 2 * p3.x) / 3, (p0.y + 2 * p3.y) / 3});
 
         control_points.push_back(p1);
         control_points.push_back(p2);
@@ -53,8 +53,8 @@ std::vector<std::array<double, 2>> Bezier::GenerateControlPoints() {
     return control_points;
 }
 
-std::vector<std::array<double, 2>> Bezier::Process() {
-    std::vector<std::array<double, 2>> solution;
+std::vector<Point3d> Bezier::Process() {
+    std::vector<Point3d> solution;
 
     clock_t start_time = clock();
 
@@ -68,11 +68,11 @@ std::vector<std::array<double, 2>> Bezier::Process() {
         }
         for (int m = 0; m <= num_samples_; m++) {
             double t = static_cast<double>(m) / num_samples_;
-            std::array<double, 2> point{0.0, 0.0};
+            Point3d point({0.0, 0.0});
             for (int i = 0; i <= n; i++) {
                 double factor = Binomial(n, i) * pow(t, i) * pow(1 - t, n - i);
-                point[0] += control_points.at(index + i)[0] * factor;
-                point[1] += control_points.at(index + i)[1] * factor;
+                point.x += control_points.at(index + i).x * factor;
+                point.y += control_points.at(index + i).y * factor;
             }
             solution.push_back(point);
         }

@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:24 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:44:30
+ * @Last Modified time: 2024-08-15 16:02:17
  */
 #include "optim/b_spline_optim.hpp"
 
@@ -59,8 +59,8 @@ std::vector<double> BSpline::GenerateKnots(const int& k,
 
     return knots;
 }
-std::vector<std::array<double, 2>> BSpline::Process() {
-    std::vector<std::array<double, 2>> solution;
+std::vector<Point3d> BSpline::Process() {
+    std::vector<Point3d> solution;
 
     clock_t start_time = clock();
 
@@ -68,13 +68,13 @@ std::vector<std::array<double, 2>> BSpline::Process() {
     std::vector<double> knots = GenerateKnots(k, num_control_point);
 
     for (int j = 0; j < num_samples_; j++) {
-        std::array<double, 2> point{0.0, 0.0};
+        Point3d point({0.0, 0.0});
         double t = static_cast<double>(j) / num_samples_ * 
                 (knots[knots.size() - 1] - knots[0]) + knots[0];
         for (int i = 0; i < num_control_point; i++) {
             double basis = BasisFun(i, k, t, knots);
-            point[0] += basis * path_ptr_->at(i)[0];
-            point[1] += basis * path_ptr_->at(i)[1];
+            point.x += basis * path_ptr_->at(i).x;
+            point.y += basis * path_ptr_->at(i).y;
         }
         solution.push_back(point);
     }

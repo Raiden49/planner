@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:33 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 11:39:58
+ * @Last Modified time: 2024-08-15 16:02:13
  */
 #include "local_planner/offline_local_planner.hpp"
 
@@ -158,13 +158,13 @@ std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::Process(
 }
 ***/
 
-std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::PathGenerator(
+std::vector<std::vector<Point3d>> OfflineLocalPlanner::PathGenerator(
         const double& radius, const double& iter_angle,
-        std::vector<std::array<double, 2>>& local_destination) {
+        std::vector<Point3d>& local_destination) {
 
-    std::vector<std::vector<std::array<double, 2>>> local_solution;
-    std::vector<std::array<double, 2>> path;
-    path.push_back({0, 0});
+    std::vector<std::vector<Point3d>> local_solution;
+    std::vector<Point3d> path;
+    path.push_back(Point3d());
 
     // 第二段每个点的路径数目是第一段的0.5倍，第三段则是第一段的1/3
     int iter_angle1 = iter_angle;
@@ -174,7 +174,7 @@ std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::PathGenerat
         local_destination.push_back(path[1]);
 
         double heading_radians1 = 
-                atan2(path[1][1] - path[0][1], path[1][0] - path[0][0]);
+                atan2(path[1].y - path[0].y, path[1].x - path[0].x);
         double heading_angle1 = heading_radians1 * 180 / M_PI;
         // 这里角度是根据旋转前后推到出来的，很简单
         for (double angle2 = -(90 - heading_angle1 - iter_angle2); 
@@ -184,7 +184,7 @@ std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::PathGenerat
             local_destination.push_back(path[2]);
 
             double heading_radians2 = 
-                    atan2(path[2][1] - path[1][1], path[2][0] - path[1][0]);
+                    atan2(path[2].y - path[1].y, path[2].x - path[1].x);
             double heading_angle2 = heading_radians2 * 180 / M_PI;
             for (double angle3 = -(90 - heading_angle2 - iter_angle3); 
                     angle3 < 90 + heading_angle2 - iter_angle3; 
@@ -202,18 +202,16 @@ std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::PathGenerat
     return local_solution;
 }
 
-std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::Process(
-        const double& radius,
-        const std::array<double, 2>& pos, 
-        const std::array<double, 2>& pos_ahead, 
-        std::vector<std::array<double, 2>>& destination) {
+std::vector<std::vector<Point3d>> OfflineLocalPlanner::Process(
+        const double& radius, const Point3d& pos, 
+        const Point3d& pos_ahead, std::vector<Point3d>& destination) {
 
-    std::vector<std::array<double, 2>> local_destination;
-    std::vector<std::vector<std::array<double, 2>>> optim_solution;
-    std::vector<std::vector<std::array<double, 2>>> global_solution;
+    std::vector<Point3d> local_destination;
+    std::vector<std::vector<Point3d>> optim_solution;
+    std::vector<std::vector<Point3d>> global_solution;
 
     // 朝向就很简单的根据前后两个点计算反正切
-    double heading = atan2(pos[1] - pos_ahead[1], pos[0] - pos_ahead[0]);
+    double heading = atan2(pos.y - pos_ahead.y, pos.x - pos_ahead.x);
 
     clock_t start_time = clock();
 
@@ -224,24 +222,21 @@ std::vector<std::vector<std::array<double, 2>>> OfflineLocalPlanner::Process(
     for (auto& local_path : local_solution) {
         static auto optim_ptr = 
                 std::make_shared<optimization::BSpline>(local_path, 20);
-        optim_ptr->path_ptr_ = 
-                std::make_shared<std::vector<std::array<double, 2>>>(local_path);
+        optim_ptr->path_ptr_ = std::make_shared<std::vector<Point3d>>(local_path);
         optim_solution.push_back(optim_ptr->Process());
     }
 
     // 前面的计算都是在旋转后的坐标系下进行的，需要转换到世界坐标系
     for (auto& optim_path : optim_solution) {
-        std::vector<std::array<double, 2>> global_path;
+        std::vector<Point3d> global_path;
         for (auto& path_point : optim_path) {
-            auto global_point = 
-                    Local2Global(path_point, {pos[0], pos[1]}, heading);
+            auto global_point = Local2Global(path_point, pos, heading);
             global_path.push_back(global_point);
         }
         global_solution.push_back(global_path);
     }
     for (auto& local_dest : local_destination) {
-        destination.push_back(
-                Local2Global(local_dest, {pos[0], pos[1]}, heading));
+        destination.push_back(Local2Global(local_dest, pos, heading));
     }
 
     clock_t end_time = clock();

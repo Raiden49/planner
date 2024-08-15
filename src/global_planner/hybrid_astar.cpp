@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-07-19 16:47:59 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-14 14:58:09
+ * @Last Modified time: 2024-08-15 16:00:22
  */
 #include "global_planner/hybrid_astar.hpp"
 
@@ -433,7 +433,7 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
     
     return false;
 }
-bool HybridAstar::GetPlan(std::vector<std::array<double, 2>>& path) {
+bool HybridAstar::GetPlan(std::vector<Point3d>& path) {
     auto start_point = Map2World(start_[0], start_[1]);
     auto goal_point = Map2World(goal_[0], goal_[1]);
     Point3d start_pose(start_point[0], start_point[1], start_yaw_);
@@ -449,7 +449,7 @@ bool HybridAstar::GetPlan(std::vector<std::array<double, 2>>& path) {
         std::reverse(node_ptr_vec.begin(), node_ptr_vec.end());
         for (auto& node_ptr : node_ptr_vec) {
             for (auto& point : node_ptr->intermediate_point_) {
-                path.push_back({point.x, point.y});
+                path.push_back(Point3d({point.x, point.y}));
             }
         }
 
