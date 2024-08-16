@@ -16,7 +16,7 @@
 
 ### 1. 全局规划
 
-目前只使用了A*算法，待更新
+目前使用了A*算法与Hybrid AStar算法
 
 ### 2. 路径优化
 
@@ -38,23 +38,37 @@
 
 ### 1. 全局规划
 
-暂略
+#### HybridA*
+
+<img src="./docs/HybridAstar.gif" width="500px" />
 
 ### 2. 路径优化
 
-|                            效果图                            | 优化算法 |
-| :----------------------------------------------------------: | -------- |
-| <img src="./docs/optim_reult.png" alt="optim_reult" width="500px" /> | -        |
-| <img src="./docs/qp_result.png" alt="qp_result" width="500px" /> | QP       |
-| <img src="./docs/bezier_result.png" alt="bezier_result" width="500px" /> | Bezier   |
-| <img src="./docs/b_spline_result.png" alt="b_spline_result" width="500px" /> | BSpline  |
+#### 优化示例
+
+<img src="./docs/optim_reult.png"  width="500px" />
+
+#### QP方法
+
+<img src="./docs/qp_result.png" alt="qp_result" width="500px" />
+
+#### Bezier方法
+
+<img src="./docs/bezier_result.png" alt="bezier_result" width="500px" />
+
+#### Bspline方法
+
+<img src="./docs/b_spline_result.png" alt="b_spline_result" width="500px" />
 
 ### 3. 局部规划
 
-|                            效果图                            | 算法       |
-| :----------------------------------------------------------: | ---------- |
-| <img src="./docs/offline_result.png" alt="offline_result" width="500px" /> | 三次样条   |
-| <img src="./docs/online_result.png" alt="online_result" width="500px" /> | 五次多项式 |
+#### 三次样条
+
+<img src="./docs/offline_result.png" alt="offline_result" width="500px" />
+
+#### 五次多项式
+
+<img src="./docs/online_result.png" alt="online_result" width="500px" />
 
 ### 4. 控制器跟踪
 
@@ -76,5 +90,6 @@
 
 ## 目前存在的BUG
 
-- 前后两个周期局部规划计算出的最优路径可能相差较大，导致抖动较为严重，尤其是路径数量较多的offline三次样条方法
-- 混合Ａ＊搜索时并不是基于图像坐标系，这使得规划出的点转换到图像坐标系，有时候会无法准确判断障碍物，导致规划轨迹穿过障碍物
+- ~~前后两个周期局部规划计算出的最优路径可能相差较大，导致抖动较为严重，尤其是路径数量较多的offline三次样条方法~~
+- ~~混合Ａ＊搜索时并不是基于图像坐标系，这使得规划出的点转换到图像坐标系，有时候会无法准确判断障碍物，导致规划轨迹穿过障碍物~~
+- 较近的距离进行Hybrid A*搜索路径时，程序报错停止
