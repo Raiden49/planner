@@ -1,3 +1,9 @@
+/*
+ * @Author: Raiden49 
+ * @Date: 2024-08-16 15:57:32 
+ * @Last Modified by:   Raiden49 
+ * @Last Modified time: 2024-08-16 15:57:32 
+ */
 #ifndef HYBRID_ASTAR_TYPE_HPP_
 #define HYBRID_ASTAR_TYPE_HPP_
 
@@ -5,14 +11,6 @@
 
 namespace global_planner
 {
-// struct Point3d {
-//     double x;
-//     double y;
-//     double yaw;
-//     Point3d(double x, double y, double yaw) : x(x), y(y), yaw(yaw) {};
-//     Point3d() = delete;
-// };
-
 struct HybridNode {
     enum NODE_STATUS {
         NOT_VISITED = 0, IN_OPENSET = 1, IN_CLOSESET = 2

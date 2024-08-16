@@ -87,8 +87,6 @@ Visualization Manager:
         All Enabled: false
         map:
           Value: false
-        new:
-          Value: true
         odom:
           Value: false
       Marker Alpha: 1
@@ -99,8 +97,6 @@ Visualization Manager:
       Show Names: false
       Tree:
         map:
-          new:
-            {}
           odom:
             {}
       Update Interval: 0
@@ -233,6 +229,14 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /robot_paths
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

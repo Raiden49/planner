@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-07-19 16:47:59 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-15 16:00:22
+ * @Last Modified time: 2024-08-16 16:00:00
  */
 #include "global_planner/hybrid_astar.hpp"
 
@@ -20,9 +20,6 @@ void HybridAstar::SetVehicleShape(const double& length, const double& width,
                                                        -width / 2);
     vehicle_shape_.block<2, 1>(6, 0) = Eigen::Vector2d(-rear_axle_dis, 
                                                        -width / 2);
-    std::cout << "rear_axle_dis: " << rear_axle_dis << std::endl;
-    std::cout << "width: " << width << std::endl;
-    std::cout << "length: " << length << std::endl;
     double step_size = move_step_size_;
     auto length_discrete_num = (int) (length / move_step_size_);
     auto width_discrete_num =  (int) (width / move_step_size_);
@@ -57,8 +54,7 @@ void HybridAstar::InitConfig() {
     rs_ptr_ = std::make_shared<ompl::base::ReedsSheppStateSpace>(turning_radius);
 
     // copyed
-    // SetVehicleShape(0.26, 0.20, 0.13);
-    SetVehicleShape(0.065, 0.05, 0.0325);
+    SetVehicleShape(0.5, 0.5, 0.25);
 
     node_ptr_map.resize(map_ptr_->rows());
     for (int row = 0; row < map_ptr_->rows(); row++) {
@@ -74,7 +70,7 @@ double HybridAstar::ComputeH(const HybridNode& current_node,
                                     current_node.world_point_.y,
                                     end_node.world_point_.x,
                                     end_node.world_point_.y);
-    if (h_cost < 3 * shot_dis_) {
+    if (h_cost <  shot_dis_) {
         ompl::base::ScopedState<ompl::base::SE2StateSpace> rs_start(rs_ptr_);
         ompl::base::ScopedState<ompl::base::SE2StateSpace> rs_goal(rs_ptr_);
         rs_start->setX(current_node.world_point_.x);
@@ -130,8 +126,6 @@ double HybridAstar::ComputeG(const HybridNode& current_node,
         }
     }
 
-    // g_cost = segment_length_;
-
     return g_cost;
 }
 inline bool HybridAstar::InBoundary(const int& x, const int& y) {
@@ -148,7 +142,6 @@ inline bool HybridAstar::HasObstacle(const Point3d& point) {
 }
 inline bool HybridAstar::HasObstacle(const int& x, const int& y) {
     return (*map_ptr_)(x, y) > 0;
-    // return false;
 }
 bool HybridAstar::IsLineAvailable(int x_1, int y_1, int x_2, int y_2) {
     // Bresenham 
@@ -208,10 +201,6 @@ bool HybridAstar::CheckCollision(const Point3d& point) {
     int x_2 = map_point_vec[1].at(0), y_2 = map_point_vec[1].at(1);
     int x_3 = map_point_vec[2].at(0), y_3 = map_point_vec[2].at(1);
     int x_4 = map_point_vec[3].at(0), y_4 = map_point_vec[3].at(1);
-    // std::cout << "x1 y1: " << x_1 << ", " << y_1 << std::endl;
-    // std::cout << "x2 y2: " << x_2 << ", " << y_2 << std::endl;
-    // std::cout << "x3 y3: " << x_3 << ", " << y_3 << std::endl;
-    // std::cout << "x4 y4: " << x_4 << ", " << y_4 << std::endl;
     if (IsLineAvailable(x_1, y_1, x_2, y_2) && IsLineAvailable(x_2, y_2, x_3, y_3) &&
         IsLineAvailable(x_3, y_3, x_4, y_4) && IsLineAvailable(x_1, y_1, x_4, y_4)) {
         return true;
@@ -265,7 +254,7 @@ inline void HybridAstar::MotionModel(const double& step_size, const double& phi,
     x = x + step_size * cos(theta);
     y = y + step_size * sin(theta);
     // theta = Mod2Pi(theta + step_size / wheel_base_ * tan(phi));
-    theta = Mod2Pi(theta + 0.5 * tan(phi));
+    theta = Mod2Pi(theta + 0.3 * tan(phi));
 }
 std::vector<HybridNode> HybridAstar::GetNeighborNodes(const HybridNode& current_node) {
     std::vector<HybridNode> neighbor_nodes;
@@ -278,21 +267,15 @@ std::vector<HybridNode> HybridAstar::GetNeighborNodes(const HybridNode& current_
         bool has_obstacle = false;
         
         // forward
-        // std::cout << "phi: " << phi << std::endl;
-        // std::cout << "theta: " << theta << std::endl;
-        // std::cout << "origin point: " << x << ", " << y << std::endl;
         for (int j = 1; j <= segment_length_discrete_num_; j++) {
             MotionModel(move_step_size_, phi, x, y, theta);
-            // std::cout << "predict point: " << x << ", " << y << std::endl;
             intermediate_points.emplace_back(Point3d(x, y, theta));
-            // std::cout << "theta: " << theta << std::endl;
             if (!CheckCollision(Point3d(x, y, theta))) {
                 has_obstacle = true;
                 break;
             }
         }
         auto point = intermediate_points.back();
-        // std::cout << "point: " << point.x << ", " << point.y << std::endl;
         auto map_point = World2Map(point.x, point.y);
         if (InBoundary(point) && !has_obstacle) {
             auto neighbor_node_ptr = std::make_shared<HybridNode>(map_point.at(0),
@@ -381,7 +364,6 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
                                             current_ptr->world_point_.y,
                                             goal_ptr->world_point_.x,
                                             goal_ptr->world_point_.y);
-        std::cout << "current dis:" << cur_dis << std::endl;
         if (cur_dis <= shot_dis_) {
             if (AnalyticExpansions(*current_ptr, *goal_ptr)) {
                 ROS_INFO("The Hybrid A star has found a path!!!");
@@ -389,7 +371,6 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
             }
         }
         auto neighbor_nodes = GetNeighborNodes(*current_ptr);
-        std::cout << "neighbor nums:" << neighbor_nodes.size() << std::endl;
         for (auto& neighbor_node : neighbor_nodes) {
             auto neighbor_edge_cost = ComputeG(*current_ptr, neighbor_node);
             auto h_cost = ComputeH(*current_ptr, *goal_ptr);
@@ -401,9 +382,6 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
                 neighbor_node.parent_ = current_ptr;
                 neighbor_node.status_ = HybridNode::IN_OPENSET;
                 neighbor_node.h_cost_ = h_cost;
-                std::cout << "h_cost: " << neighbor_node.h_cost_ << std::endl;
-                std::cout << "g_cost: " << neighbor_node.g_cost_ << std::endl;
-                // std::cout << "f_cost: " << neighbor_node.get_fcost() << std::endl;
                 // open_set_.insert(std::make_pair(neighbor_node.h_cost_, 
                 //                  std::make_shared<HybridNode>(neighbor_node)));
                 open_set_.insert(std::make_pair(neighbor_node.get_fcost(), 
@@ -434,11 +412,11 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
     return false;
 }
 bool HybridAstar::GetPlan(std::vector<Point3d>& path) {
-    auto start_point = Map2World(start_[0], start_[1]);
-    auto goal_point = Map2World(goal_[0], goal_[1]);
-    Point3d start_pose(start_point[0], start_point[1], start_yaw_);
-    Point3d goal_pose(goal_point[0], goal_point[1], goal_yaw_);
     InitConfig();
+    Point3d start_pose(Map2World(start_[0], start_[1])); 
+    start_pose.yaw = start_yaw_;
+    Point3d goal_pose(Map2World(goal_[0], goal_[1])); 
+    goal_pose.yaw = goal_yaw_;
     if (Search(start_pose, goal_pose)) {
         std::vector<std::shared_ptr<HybridNode>> node_ptr_vec;
         auto node_ptr = goal_ptr_;
@@ -449,10 +427,9 @@ bool HybridAstar::GetPlan(std::vector<Point3d>& path) {
         std::reverse(node_ptr_vec.begin(), node_ptr_vec.end());
         for (auto& node_ptr : node_ptr_vec) {
             for (auto& point : node_ptr->intermediate_point_) {
-                path.push_back(Point3d({point.x, point.y}));
+                path.push_back(point);
             }
         }
-
         return true;
     }
     return false;

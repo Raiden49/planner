@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:19 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-15 16:02:08
+ * @Last Modified time: 2024-08-15 16:08:59
  */
 #ifndef PLAN_HPP_
 #define PLAN_HPP_
@@ -100,9 +100,9 @@ class Plan {
                           const std::vector<Point3d>& ref_path,
                           std::vector<Point3d>& best_local_path);
 
-        // void PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
-        //                         const std::vector<std::array<double, 2>>& path,
-        //                         const double& width, const double& length);
+        void PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
+                                const std::vector<Point3d>& path,
+                                const double& width, const double& length);
 
         /**
          * @brief 主运行函数

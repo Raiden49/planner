@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:14 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-15 16:02:09
+ * @Last Modified time: 2024-08-15 16:21:22
  */
 #include "plan/plan.hpp"
 
@@ -30,6 +30,7 @@ void Plan::StartCallBack(
     start_flag_ = true;
     start_.x = msg->pose.pose.position.x;
     start_.y = msg->pose.pose.position.y;
+    start_.yaw = tf::getYaw(msg->pose.pose.orientation);
 }
 
 void Plan::GoalCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg) {
@@ -38,6 +39,7 @@ void Plan::GoalCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     goal_flag_ = true;
     goal_.x = msg->pose.position.x;
     goal_.y = msg->pose.position.y;
+    goal_.yaw = tf::getYaw(msg->pose.orientation);
 }
 
 void Plan::OdomCallBack(const nav_msgs::Odometry::ConstPtr& msg) {
@@ -143,7 +145,7 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
             steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
             segment_length_discrete_num, steering_penalty, steering_change_penalty, 
-            reversing_penalty, shot_distance, 0, 0, pgm_map_, start, goal);
+            reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
     
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;
@@ -310,25 +312,31 @@ bool Plan::LocalProcess(const int& sim_index,
     
 }
 
-// void Plan::PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
-//                               const std::vector<std::array<double, 2>>& path,
-//                               const double& width, const double& length) {
-//     visualization_msgs::Marker vehicle;
-//     for (const auto& point : path) {
-//         vehicle.header.frame_id = "map";
-//         vehicle.header.stamp = ros::Time::now();
-//         vehicle.type = visualization_msgs::Marker::CUBE;
-//         vehicle.scale.x = width;
-//         vehicle.scale.y = length;
-//         vehicle.color.a = 0.1;
-//         vehicle.color.r = 0.0;
-//         vehicle.color.g = 0.0;
-//         vehicle.color.b = 1.0;
-//         vehicle.pose.position.x = point[0];
-//         vehicle.pose.position.y = point[1];
-//         vehicle.pose.position.z = 0.0;
-//     }
-// }
+void Plan::PublishVehiclePath(const ros::Publisher& robot_path_pub,
+                              const std::vector<Point3d>& path,
+                              const double& width, const double& length) {
+    visualization_msgs::MarkerArray robot_path_marker_array;
+    int id = 0;
+    for (const auto& point : path) {
+        visualization_msgs::Marker robot_path_marker;
+        robot_path_marker.header.frame_id = "map";
+        robot_path_marker.header.stamp = ros::Time::now();
+        robot_path_marker.type = visualization_msgs::Marker::CUBE;
+        robot_path_marker.id = (int)(ros::Time::now().toSec() * 100) + id++;
+        robot_path_marker.scale.x = width;
+        robot_path_marker.scale.y = length;
+        robot_path_marker.color.a = 0.1;
+        robot_path_marker.color.r = 0.0;
+        robot_path_marker.color.g = 0.0;
+        robot_path_marker.color.b = 1.0;
+        robot_path_marker.pose.position.x = point.x;
+        robot_path_marker.pose.position.y = point.y;
+        robot_path_marker.pose.position.z = 0.0;
+        robot_path_marker.pose.orientation = tf::createQuaternionMsgFromYaw(point.yaw);
+        robot_path_marker_array.markers.push_back(robot_path_marker);
+    }
+    robot_path_pub.publish(robot_path_marker_array);
+}
 
 void Plan::Process() {
 
@@ -448,6 +456,7 @@ void Plan::Process() {
         optim_path_pub.publish(optim_path_msg);
         optim_local_path_pub.publish(optim_local_path_msg);
         trajectory_pub.publish(trajectory_msg);
+        PublishVehiclePath(robot_path_pub, global_world_path, 0.5, 0.5);
 
         ros::spinOnce();
         rate.sleep();
