@@ -40,35 +40,49 @@
 
 #### HybridA*
 
+<div align=center>
 <img src="./docs/HybridAstar.gif" width="500px" />
+</div>
 
 ### 2. 路径优化
 
 #### 优化示例
 
+<div align=center>
 <img src="./docs/optim_reult.png"  width="500px" />
+</div>
 
 #### QP方法
 
+<div align=center>
 <img src="./docs/qp_result.png" alt="qp_result" width="500px" />
+</div>
 
 #### Bezier方法
 
+<div align=center>
 <img src="./docs/bezier_result.png" alt="bezier_result" width="500px" />
+</div>
 
 #### Bspline方法
 
+<div align=center>
 <img src="./docs/b_spline_result.png" alt="b_spline_result" width="500px" />
+</div>
 
 ### 3. 局部规划
 
 #### 三次样条
 
+<div align=center>
 <img src="./docs/offline_result.png" alt="offline_result" width="500px" />
+</div>
 
 #### 五次多项式
 
+<div align=center>
 <img src="./docs/online_result.png" alt="online_result" width="500px" />
+</div>
 
 ### 4. 控制器跟踪
 
