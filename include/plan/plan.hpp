@@ -103,6 +103,7 @@ class Plan {
         void PublishVehiclePath(const ros::Publisher& vehicle_path_pub,
                                 const std::vector<Point3d>& path,
                                 const double& width, const double& length);
+        // void PublishClearMarker(const ros::Publisher& clear_marker_pub);
 
         /**
          * @brief 主运行函数

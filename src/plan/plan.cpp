@@ -315,14 +315,25 @@ bool Plan::LocalProcess(const int& sim_index,
 void Plan::PublishVehiclePath(const ros::Publisher& robot_path_pub,
                               const std::vector<Point3d>& path,
                               const double& width, const double& length) {
-    visualization_msgs::MarkerArray robot_path_marker_array;
+    static int last_marker_count = 0;
     int id = 0;
+    visualization_msgs::MarkerArray robot_path_marker_array;
+    visualization_msgs::MarkerArray delete_marker_array;
+    for (int i = path.size(); i < last_marker_count; ++i) {
+        visualization_msgs::Marker delete_marker;
+        delete_marker.header.frame_id = "map";
+        delete_marker.header.stamp = ros::Time::now();
+        delete_marker.id = i;
+        delete_marker.action = visualization_msgs::Marker::DELETE;
+        delete_marker_array.markers.push_back(delete_marker);
+    }
+    robot_path_pub.publish(delete_marker_array);
     for (const auto& point : path) {
         visualization_msgs::Marker robot_path_marker;
         robot_path_marker.header.frame_id = "map";
         robot_path_marker.header.stamp = ros::Time::now();
         robot_path_marker.type = visualization_msgs::Marker::CUBE;
-        robot_path_marker.id = (int)(ros::Time::now().toSec() * 100) + id++;
+        robot_path_marker.id = id++;
         robot_path_marker.scale.x = width;
         robot_path_marker.scale.y = length;
         robot_path_marker.color.a = 0.1;
@@ -335,8 +346,17 @@ void Plan::PublishVehiclePath(const ros::Publisher& robot_path_pub,
         robot_path_marker.pose.orientation = tf::createQuaternionMsgFromYaw(point.yaw);
         robot_path_marker_array.markers.push_back(robot_path_marker);
     }
+    last_marker_count = path.size();
     robot_path_pub.publish(robot_path_marker_array);
 }
+
+// void Plan::PublishClearMarker(const ros::Publisher& clear_marker_pub) {
+//     visualization_msgs::Marker clear_marker;
+//     clear_marker.header.frame_id = "map";
+//     clear_marker.header.stamp = ros::Time::now();
+//     clear_marker.action = visualization_msgs::Marker::DELETEALL;
+//     clear_marker_pub.publish(clear_marker);
+// }
 
 void Plan::Process() {
 
@@ -355,6 +375,8 @@ void Plan::Process() {
     auto trajectory_pub = nh_.advertise<nav_msgs::Path>("trajectory", 10); 
     auto robot_path_pub = 
             nh_.advertise<visualization_msgs::MarkerArray>("robot_paths", 1);
+    auto clear_marker_pub = 
+            nh_.advertise<visualization_msgs::Marker>("clear_marker", 1);
 
     std::vector<Point3d> global_world_path;
     std::vector<Point3d> best_local_path;
@@ -457,6 +479,7 @@ void Plan::Process() {
         optim_local_path_pub.publish(optim_local_path_msg);
         trajectory_pub.publish(trajectory_msg);
         PublishVehiclePath(robot_path_pub, global_world_path, 0.5, 0.5);
+        // PublishClearMarker(clear_marker_pub);
 
         ros::spinOnce();
         rate.sleep();

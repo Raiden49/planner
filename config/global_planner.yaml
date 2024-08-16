@@ -1,5 +1,5 @@
 HybridAstar : {
-  steering_angle: 15.0,
+  steering_angle: 10.0,
   steering_angle_discrete_num: 1,
   wheel_base: 0.25,
   segment_length: 1.2,

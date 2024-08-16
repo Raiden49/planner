@@ -32,7 +32,7 @@ struct HybridNode {
     HybridNode(const int& map_x, const int& map_y, const Point3d& world_point) : 
                map_x_(map_x), map_y_(map_y), status_(NOT_VISITED), 
                parent_(nullptr), world_point_(world_point) {};
-    double get_fcost() {return g_cost_ + h_cost_;}
+    double get_fcost() {return g_cost_ + 0.5 * h_cost_;}
 
     void Reset() {
         status_ = NOT_VISITED;
