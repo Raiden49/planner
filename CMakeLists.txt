@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(OsqpEigen REQUIRED)
+find_package(osqp REQUIRED)
 find_package(ompl REQUIRED)
 
 catkin_package(
@@ -19,17 +20,21 @@ catkin_package(
     CATKIN_DEPENDS roscpp visualization_msgs std_msgs nav_msgs tf
 )
 
+set(osqp_INCLUDE_DIRS /usr/local/include/osqp)
+
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
-    ${Eigen3_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
     ${OMPL_INCLUDE_DIRS}
+    ${osqp_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}
     src/plan/plan.cpp
     src/global_planner/astar.cpp 
     src/global_planner/hybrid_astar.cpp
+    src/global_planner/rrt.cpp
     src/optim/qp_optim.cpp
     src/optim/bezier_optim.cpp
     src/optim/b_spline_optim.cpp
@@ -54,6 +59,7 @@ add_dependencies(plan
 target_link_libraries(plan
     ${PROJECT_NAME}
     ${catkin_LIBRARIES}
+    osqp
     OsqpEigen
     ompl
 )

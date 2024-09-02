@@ -124,28 +124,30 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     std::shared_ptr<global_planner::GlobalPlannerInterface> global_plan_ptr = 
             std::make_shared<global_planner::AStar>(pgm_map_, start, goal);
 
-    double steering_angle = 
-            nh_.param("plan/HybridAstar/steering_angle", 10);
-    int steering_angle_discrete_num = 
-            nh_.param("plan/HybridAstar/steering_angle_discrete_num", 1);
-    double wheel_base = 
-            nh_.param("plan/HybridAstar/wheel_base", 0.10);
-    double segment_length = 
-            nh_.param("plan/HybridAstar/segment_length", 1.6);
-    int segment_length_discrete_num = 
-            nh_.param("plan/HybridAstar/segment_length_discrete_num", 8);
-    double steering_penalty = 
-            nh_.param("plan/HybridAstar/steering_penalty", 1.05);
-    double steering_change_penalty = 
-            nh_.param("plan/HybridAstar/steering_change_penalty", 1.5);
-    double reversing_penalty = 
-            nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
-    double shot_distance = 
-            nh_.param("plan/HybridAstar/shot_distance", 5.0);
-    global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
-            steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
-            segment_length_discrete_num, steering_penalty, steering_change_penalty, 
-            reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
+    global_plan_ptr = std::make_shared<global_planner::RRT>(pgm_map_, start, goal);
+
+    // double steering_angle = 
+    //         nh_.param("plan/HybridAstar/steering_angle", 10);
+    // int steering_angle_discrete_num = 
+    //         nh_.param("plan/HybridAstar/steering_angle_discrete_num", 1);
+    // double wheel_base = 
+    //         nh_.param("plan/HybridAstar/wheel_base", 0.10);
+    // double segment_length = 
+    //         nh_.param("plan/HybridAstar/segment_length", 1.6);
+    // int segment_length_discrete_num = 
+    //         nh_.param("plan/HybridAstar/segment_length_discrete_num", 8);
+    // double steering_penalty = 
+    //         nh_.param("plan/HybridAstar/steering_penalty", 1.05);
+    // double steering_change_penalty = 
+    //         nh_.param("plan/HybridAstar/steering_change_penalty", 1.5);
+    // double reversing_penalty = 
+    //         nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
+    // double shot_distance = 
+    //         nh_.param("plan/HybridAstar/shot_distance", 5.0);
+    // global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
+    //         steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
+    //         segment_length_discrete_num, steering_penalty, steering_change_penalty, 
+    //         reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
     
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;
@@ -358,6 +360,23 @@ void Plan::PublishVehiclePath(const ros::Publisher& robot_path_pub,
 //     clear_marker_pub.publish(clear_marker);
 // }
 
+void Plan::DisplayToDebug(const std::shared_ptr<std::vector<Point3d>>& path_ptr) {
+    static auto rrt_point_pub = 
+            nh_.advertise<visualization_msgs::Marker>("rrt_path_point", 1);
+
+    auto rrt_point_marker = m_util::CreateVisualMarker(
+            1.0, {1., 0., 0.}, {0.05, 0.05}, "map", "point");
+
+    for (auto& point : *path_ptr) {
+        geometry_msgs::Point vtx;
+        vtx.x = point.x;
+        vtx.y = point.y;
+        rrt_point_marker.points.push_back(vtx);
+    }
+
+    rrt_point_pub.publish(rrt_point_marker);
+}
+
 void Plan::Process() {
 
     odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("odom", 10, 
@@ -478,8 +497,10 @@ void Plan::Process() {
         optim_path_pub.publish(optim_path_msg);
         optim_local_path_pub.publish(optim_local_path_msg);
         trajectory_pub.publish(trajectory_msg);
-        PublishVehiclePath(robot_path_pub, global_world_path, 0.5, 0.5);
+        // PublishVehiclePath(robot_path_pub, global_world_path, 0.5, 0.5);
         // PublishClearMarker(clear_marker_pub);
+
+        DisplayToDebug(std::make_shared<std::vector<Point3d>>(global_world_path));
 
         ros::spinOnce();
         rate.sleep();

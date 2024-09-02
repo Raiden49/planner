@@ -21,6 +21,7 @@
 
 #include "global_planner/astar.hpp"
 #include "global_planner/hybrid_astar.hpp"
+#include "global_planner/rrt.hpp"
 #include "optim/qp_optim.hpp"
 #include "optim/bezier_optim.hpp"
 #include "optim/b_spline_optim.hpp"
@@ -104,6 +105,8 @@ class Plan {
                                 const std::vector<Point3d>& path,
                                 const double& width, const double& length);
         // void PublishClearMarker(const ros::Publisher& clear_marker_pub);
+
+        void DisplayToDebug(const std::shared_ptr<std::vector<Point3d>>& path_ptr);
 
         /**
          * @brief 主运行函数
