@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:14 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-15 16:21:22
+ * @Last Modified time: 2024-09-03 16:50:50
  */
 #include "plan/plan.hpp"
 
@@ -124,31 +124,32 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     std::shared_ptr<global_planner::GlobalPlannerInterface> global_plan_ptr = 
             std::make_shared<global_planner::AStar>(pgm_map_, start, goal);
 
-    global_plan_ptr = std::make_shared<global_planner::RRT>(pgm_map_, start, goal);
-
-    // double steering_angle = 
-    //         nh_.param("plan/HybridAstar/steering_angle", 10);
-    // int steering_angle_discrete_num = 
-    //         nh_.param("plan/HybridAstar/steering_angle_discrete_num", 1);
-    // double wheel_base = 
-    //         nh_.param("plan/HybridAstar/wheel_base", 0.10);
-    // double segment_length = 
-    //         nh_.param("plan/HybridAstar/segment_length", 1.6);
-    // int segment_length_discrete_num = 
-    //         nh_.param("plan/HybridAstar/segment_length_discrete_num", 8);
-    // double steering_penalty = 
-    //         nh_.param("plan/HybridAstar/steering_penalty", 1.05);
-    // double steering_change_penalty = 
-    //         nh_.param("plan/HybridAstar/steering_change_penalty", 1.5);
-    // double reversing_penalty = 
-    //         nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
-    // double shot_distance = 
-    //         nh_.param("plan/HybridAstar/shot_distance", 5.0);
-    // global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
-    //         steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
-    //         segment_length_discrete_num, steering_penalty, steering_change_penalty, 
-    //         reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
+    double steering_angle = 
+            nh_.param("plan/HybridAstar/steering_angle", 10);
+    int steering_angle_discrete_num = 
+            nh_.param("plan/HybridAstar/steering_angle_discrete_num", 1);
+    double wheel_base = 
+            nh_.param("plan/HybridAstar/wheel_base", 0.10);
+    double segment_length = 
+            nh_.param("plan/HybridAstar/segment_length", 1.6);
+    int segment_length_discrete_num = 
+            nh_.param("plan/HybridAstar/segment_length_discrete_num", 8);
+    double steering_penalty = 
+            nh_.param("plan/HybridAstar/steering_penalty", 1.05);
+    double steering_change_penalty = 
+            nh_.param("plan/HybridAstar/steering_change_penalty", 1.5);
+    double reversing_penalty = 
+            nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
+    double shot_distance = 
+            nh_.param("plan/HybridAstar/shot_distance", 5.0);
+    global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
+            steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
+            segment_length_discrete_num, steering_penalty, steering_change_penalty, 
+            reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
     
+    global_plan_ptr = std::make_shared<global_planner::RRT>(pgm_map_, start, goal);
+    global_plan_ptr = std::make_shared<global_planner::RRTStar>(pgm_map_, start, goal);
+
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;
     global_plan_ptr->resolution_ = resolution_;

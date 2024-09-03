@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-08-28 17:22:42 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-28 17:31:02
+ * @Last Modified time: 2024-09-03 16:37:32
  */
 #include "global_planner/rrt.hpp"
 
@@ -45,6 +45,7 @@ bool RRT::AddNewNodeToRRTTree(RRTNode& temp_node) {
     if (IsPointValid(x, y)) {
         temp_node.x = x; temp_node.y = y; 
         temp_node.parent = std::make_shared<RRTNode>(nearest_node);
+        temp_node.parent->children_nodes.push_back(temp_node);
         rrt_tree_.push_back(temp_node);
         return true;
     }
@@ -94,6 +95,6 @@ bool RRT::GetPlan(std::vector<Point3d>& path) {
             }
         }
     }
-    
+    return false;
 }
 } // namespace global_planner

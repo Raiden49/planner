@@ -35,6 +35,7 @@ add_library(${PROJECT_NAME}
     src/global_planner/astar.cpp 
     src/global_planner/hybrid_astar.cpp
     src/global_planner/rrt.cpp
+    src/global_planner/rrt_star.cpp
     src/optim/qp_optim.cpp
     src/optim/bezier_optim.cpp
     src/optim/b_spline_optim.cpp

@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:19 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-15 16:08:59
+ * @Last Modified time: 2024-09-03 16:50:27
  */
 #ifndef PLAN_HPP_
 #define PLAN_HPP_
@@ -22,6 +22,7 @@
 #include "global_planner/astar.hpp"
 #include "global_planner/hybrid_astar.hpp"
 #include "global_planner/rrt.hpp"
+#include "global_planner/rrt_star.hpp"
 #include "optim/qp_optim.hpp"
 #include "optim/bezier_optim.hpp"
 #include "optim/b_spline_optim.hpp"

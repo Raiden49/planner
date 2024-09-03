@@ -2,8 +2,11 @@
  * @Author: Raiden49 
  * @Date: 2024-08-28 16:43:55 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-28 17:18:03
+ * @Last Modified time: 2024-09-03 16:28:37
  */
+#ifndef RRT_HPP_
+#define RRT_HPP_
+
 #include "global_planner/global_planner_interface.hpp"
 
 namespace global_planner 
@@ -24,12 +27,17 @@ class RRT : public GlobalPlannerInterface {
         struct RRTNode {
             double x;
             double y;
-            uint id;
+            double cost;
             std::shared_ptr<RRTNode> parent;
-            // std::vector<RRTNode> children_nodes;
-            RRTNode(const double& x, const double& y) : x(x), y(y), parent(nullptr) {};
+            std::vector<RRTNode> children_nodes;
+            RRTNode(const double& x, const double& y) : 
+                    x(x), y(y), cost(0), parent(nullptr) {};
             RRTNode(const double& x, const double& y, const RRTNode& node) : 
-                    x(x), y(y), parent(std::make_shared<RRTNode>(node)) {};
+                    x(x), y(y), cost(0), parent(std::make_shared<RRTNode>(node)) {}; 
+            RRTNode(const double& x, const double& y, const double& cost) : 
+                    x(x), y(y), cost(cost), parent(nullptr) {};
+            RRTNode(const double& x, const double& y, const double& cost, const RRTNode& node) : 
+                    x(x), y(y), cost(cost), parent(std::make_shared<RRTNode>(node)) {};
         };
         int GetNearestNodeId(const double& x, const double& y);
         bool GeneratePoints(RRTNode& temp_node);
@@ -37,9 +45,11 @@ class RRT : public GlobalPlannerInterface {
         bool IsGoalReached(const RRTNode& temp_node);
         bool AddNewNodeToRRTTree(RRTNode& temp_node);
         bool GetPlan(std::vector<Point3d>& path) override;
-    private:
+    public:
         double step_size_ = 1.0;
         std::vector<RRTNode> rrt_tree_;
         Eigen::MatrixXi used_map_;
 };
 }
+
+#endif // RRT_HPP_
