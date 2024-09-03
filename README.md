@@ -16,7 +16,10 @@
 
 ### 1. 全局规划
 
-目前使用了A*算法与Hybrid AStar算法
+- Astar
+- Hybrid Astar
+- RRT
+- RRTstar
 
 ### 2. 路径优化
 
