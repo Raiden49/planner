@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-08-28 16:43:55 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-09-03 16:28:37
+ * @Last Modified time: 2024-09-03 17:01:43
  */
 #ifndef RRT_HPP_
 #define RRT_HPP_
@@ -14,8 +14,8 @@ namespace global_planner
 class RRT : public GlobalPlannerInterface {
     public:
         RRT(const Eigen::MatrixXi& map, const std::array<int, 2>& start, 
-            const std::array<int, 2>& goal) : 
-            GlobalPlannerInterface(map, start, goal) {
+            const std::array<int, 2>& goal, const double& step_size) : 
+            step_size_(step_size), GlobalPlannerInterface(map, start, goal) {
             
             used_map_ = Eigen::MatrixXi::Zero(map.rows(), map.cols());
             used_map_(start.at(0), start.at(1)) = 1;

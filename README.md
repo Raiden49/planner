@@ -44,6 +44,18 @@
 <img src="./docs/HybridAstar.gif" width="500px" />
 </div>
 
+#### RRT
+
+<div align=center>
+<img src="./docs/rrt.png" width="500px" />
+</div>
+
+#### RRT*
+
+<div align=center>
+<img src="./docs/rrt_star.png" width="500px" />
+</div>
+
 ### 2. 路径优化
 
 #### 优化示例
@@ -93,6 +105,10 @@
 </div>
 
 ## 更新日志
+
+### 2024/09/03
+
+添加RRT, RRT*规划方法
 
 ### 2024/08/16
 

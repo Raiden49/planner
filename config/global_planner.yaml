@@ -9,3 +9,12 @@ HybridAstar : {
   steering_change_penalty: 3.0,   # 2.0
   shot_distance: 2
 }
+
+RRT : {
+  step_size: 1.0
+}
+
+RRTStar : {
+  rewrite_thread: 2.0,
+  relink_thread: 2.0
+}

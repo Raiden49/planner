@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:14 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-09-03 16:50:50
+ * @Last Modified time: 2024-09-03 17:18:39
  */
 #include "plan/plan.hpp"
 
@@ -142,13 +142,19 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
             nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
     double shot_distance = 
             nh_.param("plan/HybridAstar/shot_distance", 5.0);
-    global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
-            steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
-            segment_length_discrete_num, steering_penalty, steering_change_penalty, 
-            reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
+    // global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
+    //         steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
+    //         segment_length_discrete_num, steering_penalty, steering_change_penalty, 
+    //         reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
     
-    global_plan_ptr = std::make_shared<global_planner::RRT>(pgm_map_, start, goal);
-    global_plan_ptr = std::make_shared<global_planner::RRTStar>(pgm_map_, start, goal);
+    double step_size = nh_.param("plan/RRT/step_size", 1.0);
+    double rewrite_thread = nh_.param("plan/RRTStar/rewrite_thread", 2.0);
+    double relink_thread = nh_.param("plan/RRTStar/relink_thread", 2.0);
+
+    // global_plan_ptr = std::make_shared<global_planner::RRT>(
+    //         pgm_map_, start, goal, step_size);
+    // global_plan_ptr = std::make_shared<global_planner::RRTStar>(
+            // pgm_map_, start, goal, step_size, rewrite_thread, relink_thread);
 
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;
