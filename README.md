@@ -20,6 +20,7 @@
 - Hybrid Astar
 - RRT
 - RRTstar
+- PRM
 
 ### 2. 路径优化
 
@@ -59,7 +60,7 @@
 <img src="./docs/rrt_star.png" width="500px" />
 </div>
 
-### PRM
+#### PRM
 
 <div align=center>
 <img src="./docs/prm.png" width="500px" />
