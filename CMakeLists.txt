@@ -43,6 +43,7 @@ add_library(${PROJECT_NAME}
     src/local_planner/online_local_planner.cpp 
     src/local_planner/offline_local_planner.cpp
     src/m_util.cpp
+    src/m_prm.cpp
 )
 
 add_dependencies(${PROJECT_NAME}
@@ -51,9 +52,14 @@ add_dependencies(${PROJECT_NAME}
 )
 
 add_executable(plan src/plan/main.cpp)
+add_executable(prm src/m_prm.cpp)
 
 add_dependencies(plan
     ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(prm
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )
 
@@ -64,7 +70,17 @@ target_link_libraries(plan
     OsqpEigen
     ompl
 )
+target_link_libraries(prm
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    osqp
+    OsqpEigen
+    ompl
+)
 
 install(TARGETS plan
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS prm
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

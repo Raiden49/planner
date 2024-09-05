@@ -78,7 +78,7 @@ bool AStar::GetPath(AstarNode& node, std::vector<Point3d>& path) {
         if (current_node.x == start_[0] && current_node.y == start_[1]) {
             break;
         }
-        path.push_back(Map2World(current_node.x, current_node.y));
+        path.push_back(map_tool_->Map2World(current_node.x, current_node.y));
         current_node = *current_node.parent;
     }
     std::reverse(path.begin(), path.end());

@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:19 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-09-03 16:50:27
+ * @Last Modified time: 2024-09-04 11:04:11
  */
 #ifndef PLAN_HPP_
 #define PLAN_HPP_
@@ -38,9 +38,9 @@ using Point3d = m_util::Point3d;
 class Plan {
     public:
         Plan(ros::NodeHandle& nh) : nh_(nh) {
-            ros::param::get("plan/origin_x", origin_x_);
-            ros::param::get("plan/origin_y", origin_y_);
-            ros::param::get("plan/resolution", resolution_);
+            ros::param::get("origin_x", origin_x_);
+            ros::param::get("origin_y", origin_y_);
+            ros::param::get("resolution", resolution_);
         }
         ~Plan() = default;
 

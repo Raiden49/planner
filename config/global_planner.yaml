@@ -1,12 +1,14 @@
+planner: Astar
+
 HybridAstar : {
-  steering_angle: 10.0,
-  steering_angle_discrete_num: 1,
-  wheel_base: 0.25,
-  segment_length: 1.2,
-  segment_length_discrete_num: 8,
-  steering_penalty: 2.0,    # 1.5
-  reversing_penalty: 4.0,   # 3.0
-  steering_change_penalty: 3.0,   # 2.0
+  steering_angle: 10.0,   # 10
+  steering_angle_discrete_num: 3,   # 1
+  wheel_base: 0.25,   #0.25
+  segment_length: 1.2,    # 1.2
+  segment_length_discrete_num: 8,   # 8
+  steering_penalty: 1.5,    # 1.5
+  reversing_penalty: 3.0,   # 3.0
+  steering_change_penalty: 2.0,   # 2.0
   shot_distance: 2
 }
 

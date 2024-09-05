@@ -68,7 +68,8 @@ bool RRTStar::GetPlan(std::vector<Point3d>& path) {
                 if (IsGoalReached(temp_node)) {
                     auto node_ptr = std::make_shared<RRTNode>(rrt_tree_.back());
                     while (node_ptr) {
-                        path.push_back(Point3d(Map2World(node_ptr->x, node_ptr->y)));
+                        path.push_back(Point3d(
+                                map_tool_->Map2World(node_ptr->x, node_ptr->y)));
                         node_ptr = node_ptr->parent;
                     }
                     std::reverse(path.begin(), path.end());

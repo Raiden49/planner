@@ -141,20 +141,29 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
     double reversing_penalty = 
             nh_.param("plan/HybridAstar/reversing_penalty", 2.0);
     double shot_distance = 
-            nh_.param("plan/HybridAstar/shot_distance", 5.0);
-    // global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
-    //         steering_angle, steering_angle_discrete_num, wheel_base, segment_length, 
-    //         segment_length_discrete_num, steering_penalty, steering_change_penalty, 
-    //         reversing_penalty, shot_distance, start_.yaw, goal_.yaw, pgm_map_, start, goal);
-    
+            nh_.param("plan/HybridAstar/shot_distance", 5.0);  
     double step_size = nh_.param("plan/RRT/step_size", 1.0);
     double rewrite_thread = nh_.param("plan/RRTStar/rewrite_thread", 2.0);
     double relink_thread = nh_.param("plan/RRTStar/relink_thread", 2.0);
 
-    // global_plan_ptr = std::make_shared<global_planner::RRT>(
-    //         pgm_map_, start, goal, step_size);
-    // global_plan_ptr = std::make_shared<global_planner::RRTStar>(
-            // pgm_map_, start, goal, step_size, rewrite_thread, relink_thread);
+    std::string global_planner_method;
+    ros::param::get("plan/planner", global_planner_method);
+    if (global_planner_method == "HybridAstar") {
+        global_plan_ptr = std::make_shared<global_planner::HybridAstar>(
+                steering_angle, steering_angle_discrete_num, wheel_base, 
+                segment_length, segment_length_discrete_num, steering_penalty, 
+                steering_change_penalty, reversing_penalty, shot_distance, 
+                start_.yaw, goal_.yaw, pgm_map_, start, goal);
+    }
+    else if (global_planner_method == "RRT") {
+        global_plan_ptr = std::make_shared<
+                global_planner::RRT>(pgm_map_, start, goal, step_size);  
+    }
+    else if (global_planner_method == "RRTstar") {
+        global_plan_ptr = std::make_shared<
+                global_planner::RRTStar>(pgm_map_, start, goal, step_size, 
+                                         rewrite_thread, relink_thread);
+    }
 
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;

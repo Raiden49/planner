@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-08-28 17:22:42 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-09-03 16:37:32
+ * @Last Modified time: 2024-09-04 17:10:07
  */
 #include "global_planner/rrt.hpp"
 
@@ -65,7 +65,7 @@ bool RRT::IsPointValid(const double&x, const double& y) {
 }
 bool RRT::IsGoalReached(const RRTNode& temp_node) {
     double dis = m_util::EuclideanDis(temp_node.x, temp_node.y, 
-                                      goal_.at(0), goal_.at(1));
+                                      (double)goal_.at(0), (double)goal_.at(1));
     if (dis <= 2.0) {
         rrt_tree_.push_back(RRTNode(goal_.at(0), goal_.at(1), temp_node));
         return true;
@@ -86,7 +86,8 @@ bool RRT::GetPlan(std::vector<Point3d>& path) {
                 if (IsGoalReached(temp_node)) {
                     auto node_ptr = std::make_shared<RRTNode>(rrt_tree_.back());
                     while (node_ptr) {
-                        path.push_back(Point3d(Map2World(node_ptr->x, node_ptr->y)));
+                        path.push_back(Point3d(
+                                map_tool_->Map2World(node_ptr->x, node_ptr->y)));
                         node_ptr = node_ptr->parent;
                     }
                     std::reverse(path.begin(), path.end());

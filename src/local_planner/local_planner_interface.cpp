@@ -47,10 +47,10 @@ std::vector<Point3d> LocalPlannerInterface::GetBestPath(
             // obs score
             // 没有计算距离最近障碍物的距离，太耗时了，
             // 只计算一段范围内的障碍物信息，以像素坐标系计算
-            auto map_point = World2Map(point.x, point.y);
+            auto map_point = map_tool_->World2Map(point.x, point.y);
             for (int i = -4; i < 5; i++) {
                 for (int j = -4; j < 5; j++) {
-                    if ((*map_ptr_)(map_point[0] + i, map_point[1] + j) != 0) {
+                    if ((*map_ptr_)(map_point.x + i, map_point.y + j) != 0) {
                         obs_score += 0 - (i * i + j * j) * pow(resolution_, 2);
                     }
                 }

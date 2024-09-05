@@ -7,11 +7,15 @@
 
     <node name="rviz" pkg="rviz" type="rviz" required="True" args="-d $(arg rviz_view)"/>
 
+    <rosparam command="load" file="$(find planner)/config/map_config.yaml"/>
+
     <node name="plan" pkg="planner" type="plan" output="screen">
         <rosparam command="load" file="$(find planner)/config/optim_config.yaml"/>
         <rosparam command="load" file="$(find planner)/config/local_config.yaml"/>
-        <rosparam command="load" file="$(find planner)/config/map_config.yaml"/>
         <rosparam command="load" file="$(find planner)/config/global_planner.yaml"/>
+    </node>
+
+    <node name="prm" pkg="planner" type="prm" output="screen">
     </node>
 
 </launch>

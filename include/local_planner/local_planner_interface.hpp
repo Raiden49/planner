@@ -29,6 +29,7 @@ class LocalPlannerInterface {
                               const std::vector<Point3d>& ref_path) {
             map_ptr_ = std::make_shared<Eigen::MatrixXi>(map);
             path_ptr_ = std::make_shared<std::vector<Point3d>>(ref_path);
+            map_tool_->set_map_ptr_(map);
         }
         virtual ~LocalPlannerInterface() {};
 
@@ -66,18 +67,8 @@ class LocalPlannerInterface {
         double resolution_, origin_x_, origin_y_;
         std::shared_ptr<const std::vector<Point3d>> path_ptr_;
         std::shared_ptr<const Eigen::MatrixXi> map_ptr_;
-
-    public:
-        inline std::array<int, 2> World2Map(const double& x, const double& y) {
-            int map_x = (x - origin_x_) / resolution_;
-            int map_y = (y - origin_y_) / resolution_;
-            return {map_x, map_y};
-        }
-        inline std::array<double, 2> Map2World(const int& x, const int& y) {
-            double world_x = x * resolution_ + origin_x_;
-            double world_y = y * resolution_ + origin_y_;
-            return {world_x, world_y};
-        }
+        std::shared_ptr<m_util::MapInfoTool> 
+                map_tool_ = std::make_shared<m_util::MapInfoTool>();
 };
 }
 

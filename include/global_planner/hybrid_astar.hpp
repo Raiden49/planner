@@ -53,11 +53,6 @@ class HybridAstar : public GlobalPlannerInterface {
                         const HybridNode& end_node);
         double ComputeG(const HybridNode& current_node,
                         const HybridNode& neighbor_node);
-        inline bool InBoundary(const int& x, const int& y);
-        inline bool InBoundary(const Point3d& point);
-        inline bool HasObstacle(const Point3d& point);
-        inline bool HasObstacle(const int& x, const int& y);
-        bool IsLineAvailable(int x_1, int y_1, int x_2, int y_2);
         bool CheckCollision(const Point3d& point);
         bool AnalyticExpansions(HybridNode& current_node, HybridNode& end_node);
         inline void MotionModel(const double& step_size, const double& phi,

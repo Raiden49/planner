@@ -128,81 +128,25 @@ double HybridAstar::ComputeG(const HybridNode& current_node,
 
     return g_cost;
 }
-inline bool HybridAstar::InBoundary(const int& x, const int& y) {
-    return x >= 0 && x < map_ptr_->rows() && y >= 0 && y < map_ptr_->cols();
-}
-inline bool HybridAstar::InBoundary(const Point3d& point) {
-    auto map_point = World2Map(point.x, point.y);
-    return map_point.at(0) >= 0 && map_point.at(0) < map_ptr_->rows() && 
-           map_point.at(1) >= 0 && map_point.at(1) < map_ptr_->cols();
-}
-inline bool HybridAstar::HasObstacle(const Point3d& point) {
-    auto map_point = World2Map(point.x, point.y);
-    return (*map_ptr_)(map_point.at(0), map_point.at(1)) > 0;
-}
-inline bool HybridAstar::HasObstacle(const int& x, const int& y) {
-    return (*map_ptr_)(x, y) > 0;
-}
-bool HybridAstar::IsLineAvailable(int x_1, int y_1, int x_2, int y_2) {
-    // Bresenham 
-    bool is_steep = abs(y_2 - y_1) > abs(x_2 - x_1);
-    if (is_steep) {
-        std::swap(x_1, y_1);
-        std::swap(x_2, y_2);
-    }
-    if (x_1 > x_2) {
-        std::swap(x_1, x_2);
-        std::swap(y_1, y_2);
-    }
-
-    int delta_x = x_2 - x_1;
-    int delta_y = abs(y_2 - y_1);
-    double delta_error = (double)delta_y / delta_x;
-    double error = 0;
-    int y_step;
-    auto y_k = y_1;
-    if (y_1 < y_2) {
-        y_step = 1;
-    }
-    else {
-        y_step = -1;
-    }
-    auto num = (int) (x_2 - x_1);
-    for (int i = 0; i < num; i++) {
-        if (is_steep) {
-            if (!InBoundary(y_k, x_1 + i * 1) || HasObstacle(y_k, x_1 + i * 1)) {
-                return false;
-            }
-        } else {
-            if (!InBoundary(x_1 + i * 1, y_k) || HasObstacle(x_1 + i * 1, y_k)) {
-                return false;
-            }
-        }
-        error += delta_error;
-        if (error >= 0.5) {
-            y_k += y_step;
-            error = error - 1.0;
-        }
-    }
-    return true;
-}
 bool HybridAstar::CheckCollision(const Point3d& point) {
     Eigen::Matrix2d rotate_matrix;
     rotate_matrix << cos(point.yaw), -sin(point.yaw),
                      sin(point.yaw), cos(point.yaw);
     
-    std::vector<std::array<int, 2>> map_point_vec;
+    std::vector<m_util::Point2t<int>> map_point_vec;
     for (int i = 0; i < 4; i++) {
         auto temp_pos = rotate_matrix * vehicle_shape_.block<2, 1>(i * 2, 0) + 
                         Eigen::Vector2d(point.x, point.y);
-        map_point_vec.push_back(World2Map(temp_pos(0, 0), temp_pos(1, 0)));
+        map_point_vec.push_back(map_tool_->World2Map(temp_pos(0, 0), temp_pos(1, 0)));
     }
-    int x_1 = map_point_vec[0].at(0), y_1 = map_point_vec[0].at(1);
-    int x_2 = map_point_vec[1].at(0), y_2 = map_point_vec[1].at(1);
-    int x_3 = map_point_vec[2].at(0), y_3 = map_point_vec[2].at(1);
-    int x_4 = map_point_vec[3].at(0), y_4 = map_point_vec[3].at(1);
-    if (IsLineAvailable(x_1, y_1, x_2, y_2) && IsLineAvailable(x_2, y_2, x_3, y_3) &&
-        IsLineAvailable(x_3, y_3, x_4, y_4) && IsLineAvailable(x_1, y_1, x_4, y_4)) {
+    int x_1 = map_point_vec[0].x, y_1 = map_point_vec[0].y;
+    int x_2 = map_point_vec[1].x, y_2 = map_point_vec[1].y;
+    int x_3 = map_point_vec[2].x, y_3 = map_point_vec[2].y;
+    int x_4 = map_point_vec[3].x, y_4 = map_point_vec[3].y;
+    if (map_tool_->IsLineAvailable(x_1, y_1, x_2, y_2) && 
+        map_tool_->IsLineAvailable(x_2, y_2, x_3, y_3) &&
+        map_tool_->IsLineAvailable(x_3, y_3, x_4, y_4) && 
+        map_tool_->IsLineAvailable(x_1, y_1, x_4, y_4)) {
         return true;
     }
     return false;
@@ -230,7 +174,8 @@ bool HybridAstar::AnalyticExpansions(HybridNode& current_node,
         rs_path.push_back(temp_node);
     }
     for (const auto& rs_point : rs_path) {
-        if (!InBoundary(rs_point) || !CheckCollision(rs_point)) {
+        auto point = map_tool_->World2Map(rs_point.x, rs_point.y);
+        if (!map_tool_->InBoundary(point.x, point.y) || !CheckCollision(rs_point)) {
             return false;
         }
     }
@@ -276,10 +221,10 @@ std::vector<HybridNode> HybridAstar::GetNeighborNodes(const HybridNode& current_
             }
         }
         auto point = intermediate_points.back();
-        auto map_point = World2Map(point.x, point.y);
-        if (InBoundary(point) && !has_obstacle) {
-            auto neighbor_node_ptr = std::make_shared<HybridNode>(map_point.at(0),
-                                                                  map_point.at(1),
+        auto map_point = map_tool_->World2Map(point.x, point.y);
+        if (map_tool_->InBoundary(map_point.x, map_point.y) && !has_obstacle) {
+            auto neighbor_node_ptr = std::make_shared<HybridNode>(map_point.x,
+                                                                  map_point.y,
                                                                   point);
             neighbor_node_ptr->intermediate_point_ = intermediate_points;
             neighbor_node_ptr->steering_grade_ = i;
@@ -302,10 +247,10 @@ std::vector<HybridNode> HybridAstar::GetNeighborNodes(const HybridNode& current_
             }
         }
         point = intermediate_points.back();
-        map_point = World2Map(point.x, point.y);
-        if (InBoundary(point) && !has_obstacle) {
-            auto neighbor_node_ptr = std::make_shared<HybridNode>(map_point.at(0),
-                                                                  map_point.at(1),
+        map_point = map_tool_->World2Map(point.x, point.y);
+        if (map_tool_->InBoundary(map_point.x, map_point.y) && !has_obstacle) {
+            auto neighbor_node_ptr = std::make_shared<HybridNode>(map_point.x,
+                                                                  map_point.y,
                                                                   point);
             neighbor_node_ptr->intermediate_point_ = intermediate_points;
             neighbor_node_ptr->steering_grade_ = i;
@@ -313,26 +258,25 @@ std::vector<HybridNode> HybridAstar::GetNeighborNodes(const HybridNode& current_
             neighbor_nodes.push_back(*neighbor_node_ptr);
         }
     }
-
     return neighbor_nodes;
 }
 inline std::vector<int> HybridAstar::GetNodePtrMapIndex(const Point3d& point) {
     std::vector<int> result;
-    auto map_point = World2Map(point.x, point.y);
+    auto map_point = map_tool_->World2Map(point.x, point.y);
     int angle = point.yaw * 180 / M_PI + 180;
-    result.push_back(map_point.at(0));
-    result.push_back(map_point.at(1));
+    result.push_back(map_point.x);
+    result.push_back(map_point.y);
     result.push_back(angle);
     
     return result;
 }
 bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) {
-    auto start_map_point = World2Map(start_point.x, start_point.y);
-    auto goal_map_point = World2Map(goal_point.x, goal_point.y);
+    auto start_map_point = map_tool_->World2Map(start_point.x, start_point.y);
+    auto goal_map_point = map_tool_->World2Map(goal_point.x, goal_point.y);
 
     std::shared_ptr<global_planner::HybridNode> start_ptr = 
-            std::make_shared<global_planner::HybridNode>(start_map_point[0], 
-                                                         start_map_point[1], 
+            std::make_shared<global_planner::HybridNode>(start_map_point.x, 
+                                                         start_map_point.y, 
                                                          start_point);
     start_ptr->direction_ = HybridNode::NO;
     start_ptr->steering_grade_ = 0;
@@ -341,8 +285,8 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
     start_ptr->intermediate_point_.push_back(start_ptr->world_point_);
 
     std::shared_ptr<global_planner::HybridNode> goal_ptr = 
-            std::make_shared<global_planner::HybridNode>(goal_map_point[0], 
-                                                         goal_map_point[1], 
+            std::make_shared<global_planner::HybridNode>(goal_map_point.x, 
+                                                         goal_map_point.y, 
                                                          goal_point);
     goal_ptr->direction_ = HybridNode::NO;
     goal_ptr->steering_grade_ = 0;                                
@@ -413,9 +357,9 @@ bool HybridAstar::Search(const Point3d& start_point, const Point3d& goal_point) 
 }
 bool HybridAstar::GetPlan(std::vector<Point3d>& path) {
     InitConfig();
-    Point3d start_pose(Map2World(start_[0], start_[1])); 
+    Point3d start_pose(map_tool_->Map2World(start_[0], start_[1])); 
     start_pose.yaw = start_yaw_;
-    Point3d goal_pose(Map2World(goal_[0], goal_[1])); 
+    Point3d goal_pose(map_tool_->Map2World(goal_[0], goal_[1])); 
     goal_pose.yaw = goal_yaw_;
     if (Search(start_pose, goal_pose)) {
         std::vector<std::shared_ptr<HybridNode>> node_ptr_vec;

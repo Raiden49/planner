@@ -2,30 +2,12 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:09 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-06-26 10:27:41
+ * @Last Modified time: 2024-09-04 16:15:03
  */
 #include "m_util.hpp"
 
 namespace m_util
 {
-inline double EuclideanDis(const double& x_1, const double& y_1, 
-                    const double& x_2, const double& y_2) {
-    return sqrt(pow(x_1 - x_2, 2) + pow(y_1 - y_2, 2));
-}
-
-inline double ManhattanDis(const double& x_1, const double& y_1, 
-                    const double& x_2, const double& y_2) {
-    return abs(x_1 - x_2) + abs(y_1 - y_2);
-}
-
-inline double DiagonalDis(const double& x_1, const double& y_1, 
-                   const double& x_2, const double& y_2) {
-    return sqrt(2) * 
-           abs(x_1 - x_2) > abs(y_1 - y_2) ? abs(y_1 - y_2) : abs(x_1 - x_2) + 
-           abs(x_1 - x_2) + abs(y_1 - y_2) - 2 * 
-           abs(x_1 - x_2) > abs(y_1 - y_2) ? abs(y_1 - y_2) : abs(x_1 - x_2);
-}
-
 int GetMinDisIndex(int& start_num, const std::array<double, 2>& current_pose, 
                    const std::vector<std::array<double, 2>>& path_vector) {
 
@@ -48,6 +30,9 @@ visualization_msgs::Marker CreateVisualMarker(
         const std::array<double ,2>& scale, const std::string& frame_id, 
         const std::string& type, const int& id) {
     visualization_msgs::Marker new_marker;
+    if (type == "line_list") {
+        new_marker.type = visualization_msgs::Marker::LINE_LIST;
+    }
     if (type == "line") {
         new_marker.type = visualization_msgs::Marker::LINE_STRIP;
     }
@@ -69,5 +54,49 @@ visualization_msgs::Marker CreateVisualMarker(
     new_marker.pose.orientation.w = 1.0;
 
     return new_marker;
+}
+
+bool MapInfoTool::IsLineAvailable(int x_1, int y_1, int x_2, int y_2) {
+    // Bresenham 
+    bool is_steep = abs(y_2 - y_1) > abs(x_2 - x_1);
+    if (is_steep) {
+        std::swap(x_1, y_1);
+        std::swap(x_2, y_2);
+    }
+    if (x_1 > x_2) {
+        std::swap(x_1, x_2);
+        std::swap(y_1, y_2);
+    }
+
+    int delta_x = x_2 - x_1;
+    int delta_y = abs(y_2 - y_1);
+    double delta_error = (double)delta_y / delta_x;
+    double error = 0;
+    int y_step;
+    auto y_k = y_1;
+    if (y_1 < y_2) {
+        y_step = 1;
+    }
+    else {
+        y_step = -1;
+    }
+    auto num = (int) (x_2 - x_1);
+    for (int i = 0; i < num; i++) {
+        if (is_steep) {
+            if (!InBoundary(y_k, x_1 + i) || HasObstacle(y_k, x_1 + i)) {
+                return false;
+            }
+        } else {
+            if (!InBoundary(x_1 + i, y_k) || HasObstacle(x_1 + i, y_k)) {
+                return false;
+            }
+        }
+        error += delta_error;
+        if (error >= 0.5) {
+            y_k += y_step;
+            error = error - 1.0;
+        }
+    }
+    return true;
 }
 }
