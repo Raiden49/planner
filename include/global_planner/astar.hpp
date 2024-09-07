@@ -2,8 +2,11 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:24:41 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-08-15 15:18:11
+ * @Last Modified time: 2024-09-06 15:47:09
  */
+#ifndef ASTAR_HPP_
+#define ASTAR_HPP_
+
 #include "global_planner/global_planner_interface.hpp"
 
 namespace global_planner
@@ -26,6 +29,8 @@ class AStar : public GlobalPlannerInterface {
             int x, y;
             double g_cost, h_cost, f_cost;
             std::shared_ptr<AstarNode> parent = nullptr;
+            AstarNode(int x, int y) : x(x), y(y), g_cost(0), h_cost(0), f_cost(0) {};
+            AstarNode() = default;
         };
         
         bool NeighborSearch(AstarNode& node);
@@ -40,3 +45,5 @@ class AStar : public GlobalPlannerInterface {
         Eigen::MatrixXd cost_map_ = Eigen::Matrix<double, 1, 1>();
 };
 }
+
+#endif // ASTAR_HPP_

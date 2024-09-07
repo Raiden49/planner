@@ -66,6 +66,12 @@
 <img src="./docs/prm.png" width="500px" />
 </div>
 
+#### JPS
+
+<div align=center>
+<img src="./docs/jps.png" width="500px" />
+</div>
+
 ### 2. 路径优化
 
 #### 优化示例
@@ -115,6 +121,10 @@
 </div>
 
 ## 更新日志
+
+### 2024/09/07
+
+添加JPS规划算法
 
 ### 2024/09/05
 

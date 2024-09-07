@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <array>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>

@@ -23,6 +23,7 @@
 #include "global_planner/hybrid_astar.hpp"
 #include "global_planner/rrt.hpp"
 #include "global_planner/rrt_star.hpp"
+#include "global_planner/jps.hpp"
 #include "optim/qp_optim.hpp"
 #include "optim/bezier_optim.hpp"
 #include "optim/b_spline_optim.hpp"

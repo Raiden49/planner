@@ -164,6 +164,10 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
                 global_planner::RRTStar>(pgm_map_, start, goal, step_size, 
                                          rewrite_thread, relink_thread);
     }
+    else if (global_planner_method == "JPS") {
+        global_plan_ptr = std::make_shared<
+                global_planner::JPS>(pgm_map_, start, goal);
+    }
 
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;
