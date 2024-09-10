@@ -2,7 +2,7 @@
  * @Author: Raiden49 
  * @Date: 2024-06-26 10:26:14 
  * @Last Modified by: Raiden49
- * @Last Modified time: 2024-09-03 17:18:39
+ * @Last Modified time: 2024-09-09 16:04:03
  */
 #include "plan/plan.hpp"
 
@@ -168,6 +168,9 @@ bool Plan::GlobalPathProcess(nav_msgs::Path& global_path_msg,
         global_plan_ptr = std::make_shared<
                 global_planner::JPS>(pgm_map_, start, goal);
     }
+
+    global_plan_ptr = std::make_shared<
+            global_planner::LPAStar>(pgm_map_, start, goal);
 
     global_plan_ptr->origin_x_ = origin_x_;
     global_plan_ptr->origin_y_ = origin_y_;
@@ -520,7 +523,7 @@ void Plan::Process() {
         // PublishVehiclePath(robot_path_pub, global_world_path, 0.5, 0.5);
         // PublishClearMarker(clear_marker_pub);
 
-        DisplayToDebug(std::make_shared<std::vector<Point3d>>(global_world_path));
+        // DisplayToDebug(std::make_shared<std::vector<Point3d>>(global_world_path));
 
         ros::spinOnce();
         rate.sleep();

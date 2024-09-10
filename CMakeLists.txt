@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME}
     src/global_planner/rrt.cpp
     src/global_planner/rrt_star.cpp
     src/global_planner/jps.cpp
+    src/global_planner/lpa_star.cpp
     src/optim/qp_optim.cpp
     src/optim/bezier_optim.cpp
     src/optim/b_spline_optim.cpp

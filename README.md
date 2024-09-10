@@ -21,6 +21,8 @@
 - RRT
 - RRTstar
 - PRM
+- JPS
+- LPA*
 
 ### 2. 路径优化
 
@@ -72,6 +74,12 @@
 <img src="./docs/jps.png" width="500px" />
 </div>
 
+#### LPA*(动态环境才能体现算法优势，懒得做动态了)
+
+<div align=center>
+<img src="./docs/lpa_star.png" width="500px" />
+</div>
+
 ### 2. 路径优化
 
 #### 优化示例
@@ -121,6 +129,10 @@
 </div>
 
 ## 更新日志
+
+### 2024/09/10
+
+添加LPA*规划算法
 
 ### 2024/09/07
 
